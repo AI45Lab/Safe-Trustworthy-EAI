@@ -212,7 +212,7 @@ const activePairs = reactive(new Set())
 const normalized = computed(() => {
   return (rowsInput.value || []).map(row => {
     const title = row.title || row['标题'] || row['题目'] || ''
-    const link = row.link || row['链接'] || ''
+    const link = row.link || row.url || row.href || row['外链'] || row['链接'] || row['论文链接'] || row['原文链接'] || row['地址'] || row['source'] || row['Source'] || row['paperUrl'] || row['pdf'] || row['arXiv'] || ''
     const firstAuthor = row.firstAuthor || row['一作'] || row['第一作者'] || ''
     const date = row.date || row['发表年月'] || row['发表时间'] || ''
     const principleCn = row.principleTag || row['10大原则'] || row['原则'] || ''
@@ -248,7 +248,13 @@ const filtered = computed(() => {
     return false
   })
 })
-watch(filtered, (arr) => emit('filtered', arr.map(x => x.raw)), { immediate: true })
+watch(filtered, (arr) => emit('filtered', arr.map(x => ({
+  ...x.raw,
+  // ensure a normalized `link` prop for downstream PaperCard
+  link: x.raw?.link || x.link || x.raw?.url || x.raw?.href || x.raw?.['外链'] || x.raw?.['链接'] ||
+        x.raw?.['论文链接'] || x.raw?.['原文链接'] || x.raw?.['地址'] || x.raw?.source || x.raw?.Source ||
+        x.raw?.paperUrl || x.raw?.pdf || x.raw?.arXiv || ''
+}))), { immediate: true })
 
 function cellCount(rowEn, colEn){
   return normalized.value.reduce((acc, p) => {

@@ -2,9 +2,10 @@
   <article class="paper-card" :style="{ '--pc-scale': String(fontScale) }">
     <!-- 顶部一行：左=标题(可省略) 右=tag(一行从右往左) -->
     <div class="top-row">
-      <a class="title" :href="safeHref" target="_blank" rel="noopener noreferrer" :title="title">
+      <a class="title" :href="safeHref" target="_blank" rel="noopener noreferrer" :title="title" @click.stop v-if="safeHref && safeHref !== '#'">
         {{ title }}
       </a>
+      <span v-else class="title disabled" :title="title">{{ title }}</span>
       <div class="tags-row">
         <span
           v-for="(t, i) in tagsRow"
@@ -28,11 +29,12 @@
     <span v-if="pubDateDisplay" class="date-pill" :title="pubDateDisplay">
       {{ pubDateDisplay }}
     </span>
-      <a class="link-icon" :href="safeHref" target="_blank" rel="noopener noreferrer" aria-label="Open link">
+      <a class="link-icon" :href="safeHref" target="_blank" rel="noopener noreferrer" aria-label="Open link" @click.stop v-if="safeHref && safeHref !== '#'">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
           <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor"/>
         </svg>
       </a>
+      <span v-else class="link-icon" aria-hidden="true" title="无外链"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="currentColor"/></svg></span>
     </div>
   </article>
 </template>
@@ -145,14 +147,24 @@ const tagsRow = computed(() => [
 
 /* -------- 统一补全为绝对外链，避免被当成本站路由 -------- */
 const safeHref = computed(() => {
-  const raw = (props.link || '').trim()
-  if (!raw) return '#'
-  if (/^https?:\/\//i.test(raw)) return raw           // http/https
-  if (raw.startsWith('//')) return 'https:' + raw     // 协议相对
-  if (/^doi:/i.test(raw)) return 'https://doi.org/' + raw.replace(/^doi:\s*/i, '')
-  if (/^10\.\d{4,9}\//.test(raw)) return 'https://doi.org/' + raw
-  if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(raw)) return 'https://' + raw.replace(/^\/+/, '')
-  return 'https://' + raw
+  const input = String(props.link || '').trim()
+  if (!input) return '#'
+  if (/^javascript:/i.test(input)) return '#'
+  // Absolute http/https URLs
+  if (/^https?:\/\//i.test(input)) return input
+  // Protocol-relative
+  if (input.startsWith('//')) return 'https:' + input
+  // DOI like: doi:10.xxxx/xxx or bare 10.xxxx/xxx
+  if (/^doi:/i.test(input)) return 'https://doi.org/' + input.replace(/^doi:\s*/i, '')
+  if (/^10\.\d{4,9}\//.test(input)) return 'https://doi.org/' + input
+  // arXiv IDs
+  if (/^arxiv:/i.test(input)) return 'https://arxiv.org/abs/' + input.replace(/^arxiv:\s*/i, '')
+  if (/^\d{4}\.\d{4,5}(v\d+)?$/i.test(input)) return 'https://arxiv.org/abs/' + input
+  // mailto / ftp
+  if (/^(mailto|ftp):/i.test(input)) return input
+  // Looks like a domain/path, prefix https://
+  if (/^[\w.-]+\.[a-z]{2,}([/:?#].*)?$/i.test(input)) return 'https://' + input
+  return '#'
 })
 </script>
 
@@ -179,6 +191,8 @@ const safeHref = computed(() => {
 
 /* 标题：允许被 tag 挤占空间，最后再省略 */
 .title{
+  .disabled{ color:#6b7280; pointer-events:none; cursor:default; text-decoration:none; }
+
   flex: 1 1 auto;
   min-width: 0;
   display: inline-block;
@@ -191,6 +205,8 @@ const safeHref = computed(() => {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .title:hover{ text-decoration: underline; }
+
+.title.disabled{ color:#6b7280; pointer-events:none; cursor:default; text-decoration:none; }
 
 /* tag 一行：从右往左排；不换行；左侧裁切 */
 .tags-row{
