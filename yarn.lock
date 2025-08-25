@@ -1192,6 +1192,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/inter@npm:^5.2.6":
+  version: 5.2.6
+  resolution: "@fontsource/inter@npm:5.2.6"
+  checksum: 10c0/7a1347608aab06e53665272ed41fd906ffa96c57b004e8aae91b98177bba97c54b60305d956254c4771387c383f9bdbd917006fb34c9721c020e6017d33e9a5c
+  languageName: node
+  linkType: hard
+
 "@hapi/hoek@npm:^9.0.0, @hapi/hoek@npm:^9.3.0":
   version: 9.3.0
   resolution: "@hapi/hoek@npm:9.3.0"
@@ -6647,6 +6654,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "project_page@workspace:."
   dependencies:
+    "@fontsource/inter": "npm:^5.2.6"
     "@mdi/font": "npm:^7.4.47"
     "@vue/cli-plugin-babel": "npm:~5.0.0"
     "@vue/cli-plugin-router": "npm:~5.0.0"

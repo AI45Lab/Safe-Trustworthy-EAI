@@ -1,0 +1,9 @@
+/* src/styles/global.css */
+:root {
+  --app-font: 'Inter', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+}
+
+html,
+body {
+  font-family: var(--app-font);
+}

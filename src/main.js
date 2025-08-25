@@ -1,3 +1,5 @@
+import '@fontsource/inter/variable.css'; // 本地托管的 Inter
+import './styles/global.css';            // 你的全局样式
 import { createApp } from 'vue';
 import App from './App.vue';
 
