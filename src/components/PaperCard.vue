@@ -34,7 +34,7 @@
           <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor"/>
         </svg>
       </a>
-      <span v-else class="link-icon" aria-hidden="true" title="无外链"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="currentColor"/></svg></span>
+      <span v-else class="link-icon" aria-hidden="true" title="No external links"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="currentColor"/></svg></span>
     </div>
   </article>
 </template>
