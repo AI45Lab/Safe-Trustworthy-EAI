@@ -5,15 +5,15 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    meta: { title: 'Trustworthy-Embodied-AI' } // ← 新增：首页标题
   },
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    // 仍然保留你的懒加载写法
+    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue'),
+    //meta: { title: 'About - Trustworthy-Embodied-AI' } // ← 新增：About 页标题
   }
 ]
 
@@ -22,4 +22,7 @@ const router = createRouter({
   routes
 })
 
+router.afterEach((to) => {
+  document.title = (to.meta && to.meta.title) || 'Trustworthy-Embodied-AI'
+})
 export default router
