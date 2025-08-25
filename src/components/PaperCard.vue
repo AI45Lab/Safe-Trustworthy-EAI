@@ -174,7 +174,7 @@ const safeHref = computed(() => {
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 10px 0;
-  padding: 20px 22px;
+  padding: 14px 16px;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   background: #fff;

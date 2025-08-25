@@ -1,6 +1,6 @@
 
 <template>
-  <section class="tmx" :style="rootStyle">
+  <section class="tmx tmx--compact" :style="rootStyle">
     <!-- Header -->
     
 <div class="tmx__toolbar">
@@ -95,8 +95,8 @@ import { computed, reactive, ref, watch } from 'vue'
 const props = defineProps({
   fitPage: { type: Boolean, default: true },
 
-  colMin: { type: Number, default: 128 },
-  rowLabelWidth: { type: Number, default: 210 },
+colMin: { type: Number, default: 112 },   // 单列最小宽度更窄
+rowLabelWidth: { type: Number, default: 168 }, // 左侧行标题更窄
 rows: { type: Array, default: () => [] },      // alternative input key
   rowsData: { type: Array, default: () => [] },  // preferred input key
   placeholder: { type: String, default: 'Search papers, authors, tags…' },
@@ -431,5 +431,15 @@ function clearAll(){ activePairs.clear(); query.value = '' }
   .tmx__title-left{ order: 1; }
   .tmx-desc{ white-space:normal; }
 }
+/* === Compact: 更窄 + 更小字 === */
+.tmx.tmx--compact .tmx__title h2{ font-size:16px; }
+.tmx.tmx--compact .tmx-desc{ font-size:1rem; }
+
+/* 表头/行头字号更小、内边距更紧 */
+.tmx.tmx--compact .colhead__text{ font-size:13px; }
+.tmx.tmx--compact .rowhead{ padding:10px; font-size:13px; }
+
+/* 单元格更紧凑 */
+.tmx.tmx--compact .cell{ padding:10px 8px; }
 
 </style>

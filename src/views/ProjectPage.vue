@@ -95,6 +95,7 @@
             :firstAuthor="paper.author"
             :link="paper.link || '#'"
             :pubDate="paper.date || paper['发表年月'] || paper['发表时间']"
+            :font-scale="0.90"
           />
         </v-col>
       </v-row>
@@ -885,14 +886,14 @@ export default {
 <style scoped>
 /* Enlarge the main frame so the whole 10-column matrix fits on common screens */
 .project-page{
-  max-width: 1680px !important;
-  width: min(96vw, 1680px);
+  max-width: 1680px !important;         /* 整体更窄 */
+  width: min(96vw, 1480px);
   margin-left: auto;
   margin-right: auto;
 }
 /* 让搜索框稍微窄一点点 */
 .search-input{
-  max-width: 1000px !important;   /* 想再窄可改 900/920；想更宽改 1000/1040 */
+  max-width: 1100px !important;   /* 想再窄可改 900/920；想更宽改 1000/1040 */
 }
 
 /* 让 Search 按钮更圆（胶囊形） */
@@ -919,4 +920,5 @@ export default {
 :deep(a[data-disabled="true"]:hover) {
   text-decoration: none;
 }
+
 </style>
