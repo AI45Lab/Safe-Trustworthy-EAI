@@ -10,29 +10,29 @@
 
     <!-- 搜索和筛选区域 -->
     <div class="search-container">
-      <v-row class="search-row" align="center">
-        <v-text-field
-          v-model="searchKeyword"
-          class="search-input"
-          outlined
-          prepend-inner-icon="mdi-magnify"
-          placeholder="Search papers by title, author..."
-          clearable
-          @keyup.enter="filterPapers"
-          hide-details
-        >
-          </v-text-field>
-        <v-btn 
-          class="search-btn"
-          dark
-          elevation="0"
-          @click="filterPapers"
-        >
-          Search
-        </v-btn>
-      </v-row>
+      <div class="search-bar">
+  <v-text-field
+    v-model="searchKeyword"
+    class="search-input"
+    dense
+    outlined
+    prepend-inner-icon="mdi-magnify"
+    placeholder="Search papers by title, author..."
+    clearable
+    @keyup.enter="filterPapers"
+    hide-details
+  />
+  <v-btn
+    class="search-btn"
+    small
+    elevation="0"
+    @click="filterPapers"
+  >
+    Search
+  </v-btn>
+</div>
 
-      <!-- 搜索统计信息 -->
+<!-- 搜索统计信息 -->
       <div class="search-stats" v-if="searchKeyword || selectedTags.length > 0">
         <v-chip 
           small 
@@ -921,4 +921,99 @@ export default {
   text-decoration: none;
 }
 
+
+/* === zoom-safe inline search row === */
+.search-container{ width: min(1200px, 100% - 48px); margin: 0 auto 24px; }
+.search-row{ width: 100%; min-width: 0; }
+.search-input{ width: 100%; max-width: none; }
+.search-btn{ height: clamp(40px, 6vh, 48px); border-radius: 9999px; padding: 0 18px; }
+@media (max-width: 960px){
+  .search-btn{ width: 100%; }
+}
+
+/* === Compact search bar tweaks (v2) === */
+.search-bar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:nowrap;
+  justify-content:center;
+  max-width: 720px;
+  margin: 0 auto 12px;
+  box-sizing: border-box;
+}
+.search-input{
+  width:420px !important;   /* smaller input */
+  max-width:100%;
+  box-sizing: border-box;
+  flex: 0 1 auto;
+}
+.search-btn{
+  min-width:88px;
+  height:40px;
+  padding: 0 14px;
+  flex: 0 0 auto;
+}
+/* Optional: attach visual */
+.search-input .v-input__slot{
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.search-btn{
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  /* remove negative margin to avoid overflow clipping */
+  margin-left: 0 !important;
+}
+@media (max-width: 640px){
+  .search-bar{ justify-content:flex-start; max-width: 100%; }
+  .search-input{ width: 100% !important; }
+}
+
+/* === Search button pill style & alignment with external CTA === */
+.search-btn{
+  height: 44px !important;        /* match pill buttons */
+  min-width: 100px;
+  padding: 0 18px !important;
+  border-radius: 9999px !important;/* capsule */
+  line-height: 44px;
+}
+/* keep input compact */
+.search-input{
+  width: 380px !important;
+}
+/* ensure baseline alignment inside bar */
+.search-bar{ align-items: center; }
+/* undo any previous left-corner flattening */
+.search-input .v-input__slot{
+  border-top-right-radius: var(--v-border-radius) !important;
+  border-bottom-right-radius: var(--v-border-radius) !important;
+}
+
+/* === align Search with external CTA visually (same row height & offset) === */
+.search-bar{
+  margin-top: 10px;              /* nudge down to align with CTA row */
+}
+/* unify input height with 44px pill button */
+.search-input .v-input__slot{
+  min-height: 44px !important;
+}
+.search-input input{
+  line-height: 44px !important;
+  height: 44px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* === Align "Search" with right edge so it vertically lines up with the CTA below === */
+.search-container{ width:100%; }
+.search-bar{
+  max-width: none !important;
+  width: 100% !important;
+  justify-content: flex-end !important; /* push input+button to the right */
+  padding-right: 12px;                  /* match card inner padding */
+  margin-left: auto;                    /* ensure right alignment in centered layout */
+}
+/* keep the input compact */
+.search-input{ width: 1160px !important; flex: 0 0 auto; }
 </style>
