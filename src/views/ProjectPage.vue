@@ -892,7 +892,7 @@ export default {
 }
 /* 让搜索框稍微窄一点点 */
 .search-input{
-  max-width: 1320px !important;   /* 想再窄可改 900/920；想更宽改 1000/1040 */
+  max-width: 1220px !important;   /* 想再窄可改 900/920；想更宽改 1000/1040 */
 }
 
 /* 让 Search 按钮更圆（胶囊形） */
