@@ -185,7 +185,7 @@ export default {
     intro: {
         title: 'Towards Safe and Trustworthy Embodied AI: Foundations, Status, and Prospects',
         authors: [
-          { name: 'Xin Tan',  homepage: 'https://faculty.ecnu.edu.cn/_s16/tx2/main.psp', symbol: '*' },
+          { name: 'Xin Tan',  homepage: 'https://tanxincs.github.io/', symbol: '*' },
           { name: 'Bangwei Liu', homepage: '#', symbol: '*' },
           { name: 'Yicheng Bao', homepage: '#' },
           { name: 'Qijian Tian', homepage: '#' },
