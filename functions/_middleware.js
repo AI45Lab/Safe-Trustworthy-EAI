@@ -1,35 +1,30 @@
-// functions/_middleware.js
 export async function onRequest({ request, env, next }) {
-    // ---- 1) Basic Auth（整站密码）----
-    const USER = env.BASIC_USER;
-    const PASS = env.BASIC_PASS;
-  
-    if (USER && PASS) {
-      const auth = request.headers.get('authorization') || '';
-      if (!auth.startsWith('Basic ')) {
-        return new Response('Unauthorized', {
-          status: 401,
-          headers: { 'WWW-Authenticate': 'Basic realm="Protected"' }
-        });
-      }
-      const [u, p] = atob(auth.slice(6)).split(':');
-      if (u !== USER || p !== PASS) {
-        return new Response('Forbidden', { status: 403 });
-      }
+  // ---- Basic Auth ----
+  const USER = env.BASIC_USER;
+  const PASS = env.BASIC_PASS;
+  if (USER && PASS) {
+    const auth = request.headers.get('authorization') || '';
+    if (!auth.startsWith('Basic ')) {
+      return new Response('Unauthorized', {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Basic realm="Protected"' }
+      });
     }
-  
-    // ---- 2) 交给 Pages 处理静态资源 ----
-    const res = await next();
-  
-    // ---- 3) SPA 回退：HTML 请求 404 时返回 index.html ----
-    const acceptsHTML = (request.headers.get('accept') || '').includes('text/html');
-    if (res.status === 404 && acceptsHTML) {
-      const url = new URL(request.url);
-      url.pathname = '/index.html';
-      // 用 Pages 的静态资源绑定取 index.html，避免再次进入中间件而循环
-      return env.ASSETS.fetch(new Request(url, request));
-    }
-  
-    return res;
+    const [u, p] = atob(auth.slice(6)).split(':');
+    if (u !== USER || p !== PASS) return new Response('Forbidden', { status: 403 });
   }
-  
+
+  // 交给 Pages 先处理静态资源
+  const res = await next();
+
+  // 仅对 HTML 页面做 SPA 回退；静态资源一律不回退
+  const url = new URL(request.url);
+  const isStatic = /\.(js|css|map|json|png|jpe?g|gif|svg|ico|webp|txt|woff2?|ttf|otf)$/i.test(url.pathname);
+  const acceptsHTML = (request.headers.get('accept') || '').includes('text/html');
+
+  if (res.status === 404 && acceptsHTML && !isStatic) {
+    url.pathname = '/index.html';
+    return env.ASSETS.fetch(new Request(url, request));
+  }
+  return res;
+}
