@@ -200,9 +200,9 @@ export default {
 
         links: {
           paper:  '#',
-          code:  '#',
-          project: '#',
-          dataset: '#'
+          //code:  '#',
+         // project: '#',
+         // dataset: '#'
         },
        
       }

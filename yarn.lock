@@ -1192,7 +1192,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource/inter@npm:^5":
+"@fontsource-variable/inter@npm:^5.2.6":
+  version: 5.2.6
+  resolution: "@fontsource-variable/inter@npm:5.2.6"
+  checksum: 10c0/946efe63cb0328433e8cf00af95cd2fb6f2e9e8b9c0bbf2170376f3d941c5c4b332f0279b5e73cbe05ac04ad01751c1d108d0a625e00e4f8c2ffca35b33d402f
+  languageName: node
+  linkType: hard
+
+"@fontsource/inter@npm:^5.2.6":
   version: 5.2.6
   resolution: "@fontsource/inter@npm:5.2.6"
   checksum: 10c0/7a1347608aab06e53665272ed41fd906ffa96c57b004e8aae91b98177bba97c54b60305d956254c4771387c383f9bdbd917006fb34c9721c020e6017d33e9a5c
@@ -6654,7 +6661,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "project_page@workspace:."
   dependencies:
-    "@fontsource/inter": "npm:^5"
+    "@fontsource-variable/inter": "npm:^5.2.6"
+    "@fontsource/inter": "npm:^5.2.6"
     "@mdi/font": "npm:^7.4.47"
     "@vue/cli-plugin-babel": "npm:~5.0.0"
     "@vue/cli-plugin-router": "npm:~5.0.0"
