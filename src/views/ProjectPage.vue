@@ -195,7 +195,7 @@ export default {
           { name: 'Sen Wang', homepage: '#' },
           { name: 'Yuqi Zhang', homepage: '#' },
           { name: 'Xuhong Wang', homepage: '#', symbol: '†' },
-          { name: 'Chaochao Lu', homepage: '#', symbol: '§' }
+          { name: 'Chaochao Lu', homepage: 'https://causallu.com/', symbol: '§' }
         ],
         affiliation: 'Shanghai Artificial Intelligence Laboratory',
 
