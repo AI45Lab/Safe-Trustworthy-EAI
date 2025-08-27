@@ -10,27 +10,7 @@
 
     <!-- 搜索和筛选区域 -->
     <div class="search-container">
-      <div class="search-bar">
-  <v-text-field
-    v-model="searchKeyword"
-    class="search-input"
-    dense
-    outlined
-    prepend-inner-icon="mdi-magnify"
-    placeholder="Search papers by title, author..."
-    clearable
-    @keyup.enter="filterPapers"
-    hide-details
-  />
-  <v-btn
-    class="search-btn"
-    small
-    elevation="0"
-    @click="filterPapers"
-  >
-    Search
-  </v-btn>
-</div>
+      
 
 <!-- 搜索统计信息 -->
       <div class="search-stats" v-if="searchKeyword || selectedTags.length > 0">
@@ -58,8 +38,33 @@
       </div>
 
       <!-- 二维表格容器 -->
-      <div class="tag-matrix-container">
-<tag-matrix :onTagClick="handleTagFilter" :rows-data="papers" @filtered="onMatrixFiltered" :key="tmxKey"></tag-matrix>
+      <div class="tag-matrix-container"><tag-matrix :onTagClick="handleTagFilter" :rows-data="papers" @filtered="onMatrixFiltered" :key="tmxKey">
+  <template #left-actions>
+
+<div class="search-bar">
+  <v-text-field
+    v-model="searchKeyword"
+    class="search-input"
+    dense
+    outlined
+    prepend-inner-icon="mdi-magnify"
+    placeholder="Search papers by title, author..."
+    clearable
+    @keyup.enter="filterPapers"
+    hide-details
+  />
+  <v-btn
+    class="search-btn"
+    small
+    elevation="0"
+    @click="filterPapers"
+  >
+    Search
+  </v-btn>
+</div>
+
+  </template>
+</tag-matrix>
         
         <!-- 活跃过滤器显示 -->
         <div class="active-filters" v-if="activeFilter">
@@ -94,7 +99,7 @@
             :stageTag="paper.stageTag"
             :firstAuthor="paper.author"
             :link="paper.link || '#'"
-            :pubDate="paper.date || paper['发表年月'] || paper['发表时间']"
+            :pubDate="String(paper.date ?? paper['发表年月'] ?? paper['发表时间'] ?? '')"
             :font-scale="0.90"
           />
         </v-col>
@@ -168,7 +173,42 @@ import PaperCard from '@/components/PaperCard.vue'
 import TagMatrix from '@/components/TagMatrix.vue'
 import csvData from '@/data/dataTable.csv'
 import SubmitPaperClient from '@/components/SubmitPaperClient.vue'
+import { searchPapers } from '@/utils/paperSearch'  
+import { computed } from 'vue'
 
+// 把已有的数据源“取一个能用的”作为别名传给 TagMatrix
+function toArr(x){ return Array.isArray(x) ? x : (Array.isArray(x?.value) ? x.value : []) }
+const __paper_rows = computed(() => {
+  const a = toArr(typeof filteredPapers !== 'undefined' ? filteredPapers : [])
+  const b = toArr(typeof matrixFilteredRows !== 'undefined' ? matrixFilteredRows : [])
+  const c = toArr(typeof papers !== 'undefined' ? papers : [])
+  return a.length ? a : (b.length ? b : c)
+})
+const _STOP = new Set([
+  'a','an','the','and','or','for','of','on','in','to','with','by','at','from',
+  'about','as','is','are','be','was','were','this','that','these','those',
+  'we','you','they','he','she','it','into','over','under','between','against',
+  'without','within','across','per','via','using','use','than','then','there',
+  'here','our','your','their'
+])
+const _norm = (s) => (s||'').toLowerCase().normalize('NFKC')
+  .replace(/[_/]+/g,' ')
+  .replace(/[^\p{L}\p{N}\s-]/gu,' ')
+  .replace(/-+/g,' ')         // model-agnostic => model agnostic
+  .replace(/\s+/g,' ').trim()
+const _words = (s) => _norm(s).split(' ').filter(Boolean)
+const _toks  = (s) => _words(s).filter(t => !_STOP.has(t) && t.length>2)
+const _containsPhrase = (titleWords, phraseTokens) => {
+  if (!phraseTokens.length) return true
+  for (let i=0; i+phraseTokens.length<=titleWords.length; i++){
+    let ok = true
+    for (let k=0;k<phraseTokens.length;k++){
+      if (titleWords[i+k] !== phraseTokens[k]) { ok=false; break }
+    }
+    if (ok) return true
+  }
+  return false
+}
 export default {
   components: { PaperCard, TagMatrix, PaperIntro , SubmitPaperClient },
   data() {
@@ -219,6 +259,16 @@ export default {
   beforeDestroy() {
     window.removeEventListener('scroll', this.handleScroll)
   },
+  computed: {
+  __paper_rows() {
+    const a = this.filteredPapers
+    const b = this.matrixFilteredRows
+    const c = this.papers
+    if (Array.isArray(a) && a.length) return a
+    if (Array.isArray(b) && b.length) return b
+    return Array.isArray(c) ? c : []
+  }
+},
   methods: {
     _isStop(w){
       const s = (w||'').toString().toLowerCase();
@@ -394,20 +444,15 @@ export default {
           Array.isArray(p?.apps)   && p.apps.includes(tag2)
         );
       }
+      const qRaw = (this.searchKeyword || '').trim()
+      if (!qRaw) { this.filteredPapers = rows; return }
 
-      const q = this._norm(this.searchKeyword || '');
-      if (!q.length){
-        this.filteredPapers = rows;
-        return;
-      }
+      // 使用严格版搜索（已“无停用词 + 连续短语硬门槛”）
+      const res = searchPapers(rows, qRaw, 60)
+      console.info('[ProjectPage] search called:', qRaw, '=>', res.length, 'items')
+      this.filteredPapers = res
+      return
 
-      const withScore = rows
-        .map((p, idx) => ({ p, _score: this._paperScore(p, q), _idx: idx }))
-        .filter(x => x._score > 0);
-
-      withScore.sort((a, b) => (b._score - a._score) || (a._idx - b._idx));
-
-      this.filteredPapers = withScore.map(x => x.p);
     },
 
     handleTagFilter(tag1, tag2) {
@@ -663,10 +708,8 @@ export default {
 
 /* 统一内容中心宽度（与 search-container 一致） */
 .content-frame,
-.tag-matrix-container{
-  max-width: 1620px;             /* 由 1400 -> 1560：右边更宽，视觉居中 */
-  margin: 16px auto 40px;
-}
+.tag-matrix-container{ position:relative; max-width: 1620px;             /* 由 1400 -> 1560：右边更宽，视觉居中 */
+  margin: 16px auto 40px; }
 
 /* 响应式设计 */
 @media (max-width: 1768px) {
@@ -892,9 +935,7 @@ export default {
   margin-right: auto;
 }
 /* 让搜索框稍微窄一点点 */
-.search-input{
-  max-width: 1100px !important;   /* 想再窄可改 900/920；想更宽改 1000/1040 */
-}
+.search-input{ width:100%; max-width:300px; min-width:180px; flex:0 0 auto; }
 
 /* 让 Search 按钮更圆（胶囊形） */
 .search-btn{
@@ -932,16 +973,7 @@ export default {
 }
 
 /* === Compact search bar tweaks (v2) === */
-.search-bar{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:nowrap;
-  justify-content:center;
-  max-width: 720px;
-  margin: 0 auto 12px;
-  box-sizing: border-box;
-}
+.search-bar{ display:flex; align-items:center; gap:8px; justify-content:flex-start; flex:0 0 auto; margin-left:0; }
 .search-input{
   width:420px !important;   /* smaller input */
   max-width:100%;
@@ -966,7 +998,7 @@ export default {
   margin-left: 0 !important;
 }
 @media (max-width: 640px){
-  .search-bar{ justify-content:flex-start; max-width: 100%; }
+  .search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end; justify-content:flex-start; max-width: 100%; }
   .search-input{ width: 100% !important; }
 }
 
@@ -983,7 +1015,7 @@ export default {
   width: 380px !important;
 }
 /* ensure baseline alignment inside bar */
-.search-bar{ align-items: center; }
+.search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end; align-items: center; }
 /* undo any previous left-corner flattening */
 .search-input .v-input__slot{
   border-top-right-radius: var(--v-border-radius) !important;
@@ -991,7 +1023,7 @@ export default {
 }
 
 /* === align Search with external CTA visually (same row height & offset) === */
-.search-bar{
+.search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end;
   margin-top: 10px;              /* nudge down to align with CTA row */
 }
 /* unify input height with 44px pill button */
@@ -1007,7 +1039,7 @@ export default {
 
 /* === Align "Search" with right edge so it vertically lines up with the CTA below === */
 .search-container{ width:100%; }
-.search-bar{
+.search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end;
   max-width: none !important;
   width: 100% !important;
   justify-content: flex-end !important; /* push input+button to the right */
@@ -1015,5 +1047,25 @@ export default {
   margin-left: auto;                    /* ensure right alignment in centered layout */
 }
 /* keep the input compact */
-.search-input{ width: 1160px !important; flex: 0 0 auto; }
+.search-input{ width: 720px !important; flex: 0 0 auto; }
+
+/* Hide the right-side CTA line inside TagMatrix header (generic, non-invasive) */
+::v-deep(tag-matrix > div:first-child > div:last-child),
+::v-deep(tag-matrix .header-right),
+::v-deep(tag-matrix .text-right),
+::v-deep(tag-matrix .cta),
+::v-deep(tag-matrix .cta-line){
+  display:none !important;
+}
+
+/* Mobile: keep search visible and stack when needed */
+@media (max-width: 1024px){
+  .search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end; top:-32px; }
+  .search-input{ max-width:100%; }
+}
+@media (max-width: 640px){
+  .search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end; top:-24px; flex-wrap:wrap !important; justify-content:stretch; }
+  .search-input{ min-width:0; flex:1 1 100%; }
+}
+
 </style>

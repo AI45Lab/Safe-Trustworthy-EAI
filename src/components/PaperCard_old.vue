@@ -47,7 +47,7 @@ const props = defineProps({
   firstAuthor: { type: String, required: true },
   link: { type: String, required: true },
   fontScale: { type: Number, default: 1 },
-  pubDate: { type: String, default: '' },
+  ubDate: { type: [String, Number], default: '' },
 })
 
 /* -------- 规整 & 映射 -------- */

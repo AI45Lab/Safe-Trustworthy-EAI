@@ -9,10 +9,10 @@
     <h2>Filter by Categories</h2>
   </div>
 
+  <div class="tmx__left-actions"><slot name="left-actions"></slot></div>
   <div class="tmx__spacer"></div>
 
-  <div class="tmx__cta-right">
-    <span class="tmx-desc">Think your work fits this topic? <b>Share it with us — we review regularly.</b></span>
+  <div class="tmx__cta-right"><slot name="actions"></slot>
     <SubmitPaperClient
       buttonLabel="Share your paper ✨"
       :showHint="false"
@@ -294,6 +294,7 @@ function clearAll(){ activePairs.clear(); query.value = '' }
 /* Toolbar */
 .tmx__toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding-right: var(--edge-r,24px); }
 .tmx__spacer{ flex:1 1 auto; }
+.tmx__cta-right{ display:flex; align-items:center; gap:12px; }
 .tmx__title{ display:flex; align-items:center; gap:10px; }
 .tmx__title .bar{ width:6px; height:20px; border-radius:3px; background:linear-gradient(180deg, #10b981, #60a5fa); }
 .tmx__title h2{ font-size: 20px; font-weight:700; color:#0f172a; letter-spacing:0.2px; }
@@ -441,5 +442,24 @@ function clearAll(){ activePairs.clear(); query.value = '' }
 
 /* 单元格更紧凑 */
 .tmx.tmx--compact .cell{ padding:10px 8px; }
+
+
+/* === Mobile/Small screens: keep columns readable by allowing horizontal scroll === */
+@media (max-width: 1024px){
+  .tmx__matrixWrap{ overflow-x:auto; -webkit-overflow-scrolling: touch; }
+  .tmx__matrix{ width: max-content; }
+  .tmx__matrix.full{
+    grid-template-columns: var(--tmx-row-label-w, 210px) repeat(10, minmax(var(--tmx-col-min, 112px), 1fr));
+  }
+}
+
+
+/* Keep toolbar one-line on desktop; allow wrap on small screens */
+.tmx__toolbar{ flex-wrap: nowrap; }
+.tmx__left-actions{ display:flex; align-items:center; gap:12px; margin-left:12px; }
+@media (max-width: 1024px){
+  .tmx__toolbar{ flex-wrap: wrap; }
+  .tmx__left-actions{ margin-left:0; }
+}
 
 </style>
