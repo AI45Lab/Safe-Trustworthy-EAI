@@ -171,7 +171,7 @@ import { ref, onMounted } from 'vue'
 import PaperIntro from '@/components/PaperIntro.vue'
 import PaperCard from '@/components/PaperCard.vue'
 import TagMatrix from '@/components/TagMatrix.vue'
-import csvData from '@/data/dataTable.csv'
+import csvData from '@/data/data.csv'
 import SubmitPaperClient from '@/components/SubmitPaperClient.vue'
 import { searchPapers } from '@/utils/paperSearch'  
 import { computed } from 'vue'
@@ -235,7 +235,8 @@ export default {
           { name: 'Sen Wang', homepage: '#' },
           { name: 'Yuqi Zhang', homepage: '#' },
           { name: 'Xuhong Wang', homepage: '#', symbol: '†' },
-          { name: 'Chaochao Lu', homepage: 'https://causallu.com/', symbol: '§' }
+          { name: 'Chaochao Lu', homepage: 'https://causallu.com/', symbol: '†' },
+          { name: 'Bowen Zhou', homepage: 'https://scholar.google.com/citations?user=h3Nsz6YAAAAJ&hl=zh-CN&oi=ao', symbol: '†' }
         ],
         affiliation: 'Shanghai Artificial Intelligence Laboratory',
 
