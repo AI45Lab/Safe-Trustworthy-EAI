@@ -79,8 +79,9 @@
     </div>
 
     <!-- Summary -->
-    <div class="tmx__summary">
-      <strong>{{ filtered.length }}</strong> paper(s) match current filters
+    <div class="tmx__summary-row">
+      <div class="tmx__summary"><strong>{{ filtered.length }}</strong> paper(s) match current filters</div>
+      <div class="tmx__summary-right"><slot name="footer-right"></slot></div>
     </div>
   </section>
 </template>
@@ -397,8 +398,10 @@ function clearAll(){ activePairs.clear(); query.value = '' }
 .chip .x{ margin-left:6px; color:#9aa4b2 }
 
 /* Summary */
+.tmx__summary-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .tmx__summary{ font-size: 14px; color:#334155; }
 .tmx__summary strong{ font-size:1rem }
+.tmx__summary-right{ margin-left:auto; margin-right:16px; }
 
 /* Responsive */
 @media (max-width: 1180px){ .tmx__matrix{ grid-template-columns: 160px repeat(10, minmax(102px,1fr)); } }

@@ -25,7 +25,7 @@
     <img src="@/assets/ailab.png" alt="Shanghai Artificial Intelligence Laboratory" class="aff-logo" />
   </a>
 
-  <div class="aff-names" title="可复制">
+  <div class="aff-names" title="">
     <div ref="affCn" class="aff-cn" :style="{ width: affTargetWidth + 'px', letterSpacing: affCnLetterSpacing + 'px' }">
       上海人工智能实验室
     </div>
@@ -33,6 +33,7 @@
       Shanghai Artificial Intelligence Laboratory
     </div>
   </div>
+  
 
 
   

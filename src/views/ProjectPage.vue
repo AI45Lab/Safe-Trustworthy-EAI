@@ -64,6 +64,12 @@
 </div>
 
   </template>
+  <template #footer-right>
+    <button class="tmx-toggle" @click="showPaperList = !showPaperList">
+      <template v-if="showPaperList">▲ HIDE PAPERS</template>
+      <template v-else>▼ SHOW PAPERS ({{ filteredPapers.length }})</template>
+    </button>
+  </template>
 </tag-matrix>
         
         <!-- 活跃过滤器显示 -->
@@ -86,7 +92,7 @@
 
     <!-- 论文列表（统一与上方容器相同的中心宽度） -->
     <div class="content-frame">
-      <v-row justify="center">
+      <v-row justify="center" v-show="showPaperList">
         <v-col
           cols="12"
           lg="11" xl="11"
@@ -257,6 +263,7 @@ export default {
       selectedTags: [],
       filteredPapers: [],
       activeFilter: '',
+      showPaperList: true,
       showBackToTop: false,
         // ✅ 论文介绍模块的数据（示例）
     intro: {
@@ -968,6 +975,9 @@ export default {
   pointer-events: none;
 
 }
+.tmx-toggle{ background:transparent; border:none; color:#64748b; font-size:14px; padding:6px 10px; border-radius:10px; cursor:pointer; }
+.tmx-toggle:hover{ color:#0f172a; text-decoration: underline; }
+/* end of toggle styles */
 </style>
 
 <style scoped>
@@ -1126,4 +1136,7 @@ export default {
 }
 
 
+.tmx-toggle{ background:transparent; border:none; color:#64748b; font-size:14px; padding:6px 10px; border-radius:10px; cursor:pointer; }
+.tmx-toggle:hover{ color:#0f172a; text-decoration: underline; }
+/* end of toggle styles */
 </style>
