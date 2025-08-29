@@ -1,28 +1,19 @@
+
 <template>
   <teleport to="body">
-    <!-- 右下角重开按钮 -->
-    <button
-      v-if="hidden"
-      class="metrics-fab"
-      @click.stop="onReopen"
-      aria-label="Open metrics"
-      title="Open metrics"
-    >ⓘ</button>
+    <button v-if="hidden" class="metrics-fab" @click.stop="onReopen" aria-label="Open metrics">ⓘ</button>
 
-    <!-- 浮动卡片（更窄版） -->
-    <div
-      v-else
-      class="impact-card floating"
+    <div v-else class="impact-card floating"
       :style="{ left: pos.x + 'px', bottom: pos.y + 'px' }"
       @mousedown="onDragStart"
-      @touchstart.prevent="onDragStart"
-    >
-      <button class="close" aria-label="Close" title="Close" @click.stop="onClose">×</button>
+      @touchstart.prevent="onDragStart">
+      <button class="close" aria-label="Close" @click.stop="onClose">×</button>
 
+      <!-- 第一行：基础指标 -->
       <div class="metrics">
         <div class="metric">
           <div class="label">GitHub Stars</div>
-          <div class="value">{{ stars ?? '—' }}</div>
+          <div class="value">{{ formatNumber(stars) }}</div>
         </div>
         <div class="metric">
           <div class="label">Last Updated</div>
@@ -30,15 +21,29 @@
         </div>
       </div>
 
-      <p class="cta">
-        {{ ctaText }}
-      </p>
+      <!-- 来访国家统计（可选显示） -->
+      <div v-if="countries.length" class="countries">
+        <div class="countries-title">来访国家统计（Top {{ topN }}）</div>
+        <div class="country-list">
+          <div v-for="c in countries" :key="c.code" class="country">
+            <span class="flag">{{ flagEmoji(c.code) }}</span>
+            <span class="name">{{ regionName(c.code) }}</span>
+            <span class="count">{{ formatNumber(c.count) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta">{{ ctaText }}</div>
     </div>
   </teleport>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+const POS_KEY = 'IMPACT_METRICS_POS'
+const HIDE_KEY = 'IMPACT_METRICS_HIDE'
+const STARS_KEY = 'IMPACT_METRICS_STARS'
+const UPDATED_KEY = 'IMPACT_METRICS_UPDATED'
 
 export default {
   name: 'ImpactMetrics',
@@ -46,200 +51,186 @@ export default {
     starsRepo:   { type: String, default: '' },
     updatedRepo: { type: String, default: '' },
     githubToken: { type: String, default: '' },
-
-    /* 保留但不使用，避免父组件传参告警 */
     visitorsApi: { type: String, default: '' },
     collectApi:  { type: String, default: '' },
     topN:        { type: Number, default: 5 },
-
-    ctaText: {
-      type: String,
-      default:
-        'If you have any comments on the advantages or disadvantages of this work, are willing to share your own research, or experience problems during use, please click the button on the right to contact us.'
-    }
+    ctaText:     { type: String, default: '如果您对这项工作的优势或不足有任何看法，愿意分享您的工作，或在使用中遇到问题，欢迎点击下方按钮与我们交流。' },
   },
-
   setup(props){
-    const stars     = ref(null);
-    const updatedAt = ref('');
-    const hidden    = ref(false);
-    const pos       = ref({ x: 16, y: 16 });
+    const stars     = ref(null)
+    const updatedAt = ref('')
+    const countries = ref([])
+    const hidden    = ref(false)
+    const pos       = ref({ x: 16, y: 16 })
 
-    const POS_KEY  = 'impact_metrics_pos';
-    const HIDE_KEY = 'impact_metrics_hide';
+    // 先加载缓存，避免出现 '—'
+    try{
+      const s = localStorage.getItem(STARS_KEY); if (s) stars.value = Number(s);
+      const u = localStorage.getItem(UPDATED_KEY); if (u) updatedAt.value = u;
+    }catch{}
 
-    function loadState(){
-      try {
-        const raw = localStorage.getItem(POS_KEY);
-        const p = raw ? JSON.parse(raw) : null;
-        if (p && typeof p.x === 'number' && typeof p.y === 'number') pos.value = p;
-      } catch {}
-      try { hidden.value = localStorage.getItem(HIDE_KEY) === '1'; } catch {}
-    }
+    const clamp = (v,a,b)=>Math.min(Math.max(v,a),b)
+    const start = ref({x:0,y:0})
+    const origin= ref({x:16,y:16})
+    const dragging = ref(false)
 
-    // —— 拖拽 ——
-    let start = null;
     function onDragStart(e){
-      const pt = ('touches' in e) ? e.touches[0] : e;
-      start = { x: pt.clientX, y: pt.clientY, pos: { ...pos.value } };
-      window.addEventListener('mousemove', onDragMove);
-      window.addEventListener('mouseup', onDragEnd);
-      window.addEventListener('touchmove', onDragMove, { passive: false });
-      window.addEventListener('touchend', onDragEnd);
+      dragging.value = true
+      const t = e.touches ? e.touches[0] : e
+      start.value = { x:t.clientX, y:t.clientY }
+      origin.value = { ...pos.value }
+      window.addEventListener('mousemove', onDragMove)
+      window.addEventListener('mouseup', onDragEnd)
+      window.addEventListener('touchmove', onDragMove, { passive:false })
+      window.addEventListener('touchend', onDragEnd)
     }
     function onDragMove(e){
-      if (!start) return;
-      const pt = ('touches' in e) ? e.touches[0] : e;
-      const dx = pt.clientX - start.x;
-      const dy = pt.clientY - start.y;
-      pos.value = {
-        x: Math.max(0, start.pos.x + dx),
-        y: Math.max(0, start.pos.y - dy)
-      };
+      if (!dragging.value) return
+      const t = e.touches ? e.touches[0] : e
+      const dx = t.clientX - start.value.x
+      const dy = t.clientY - start.value.y
+      const W = window.innerWidth, H = window.innerHeight
+      const card = document.querySelector('.impact-card')
+      const cardW = card ? card.offsetWidth : 210
+      const cardH = card ? card.offsetHeight: 160
+      pos.value.x = clamp(origin.value.x + dx, 8, Math.max(8, W - cardW - 8))
+      pos.value.y = clamp(origin.value.y - dy, 8, Math.max(8, H - cardH - 8))
+      e.preventDefault?.()
     }
     function onDragEnd(){
-      start = null;
-      try { localStorage.setItem(POS_KEY, JSON.stringify(pos.value)); } catch {}
-      window.removeEventListener('mousemove', onDragMove);
-      window.removeEventListener('mouseup', onDragEnd);
-      window.removeEventListener('touchmove', onDragMove);
-      window.removeEventListener('touchend', onDragEnd);
+      if (!dragging.value) return
+      dragging.value = false
+      try{ localStorage.setItem(POS_KEY, JSON.stringify(pos.value)) }catch{}
+      window.removeEventListener('mousemove', onDragMove)
+      window.removeEventListener('mouseup', onDragEnd)
+      window.removeEventListener('touchmove', onDragMove)
+      window.removeEventListener('touchend', onDragEnd)
     }
-    function onClose(){
-      hidden.value = true;
-      try { localStorage.setItem(HIDE_KEY, '1'); } catch {}
-    }
-    function onReopen(){
-      hidden.value = false;
-      try { localStorage.removeItem(HIDE_KEY); } catch {}
+    function onClose(){ hidden.value=true; try{ localStorage.setItem(HIDE_KEY,'1') }catch{} }
+    function onReopen(){ hidden.value=false; try{ localStorage.removeItem(HIDE_KEY) }catch{} }
+    function loadState(){
+      try{ const p=JSON.parse(localStorage.getItem(POS_KEY)||'null'); if(p&&typeof p.x==='number'&&typeof p.y==='number') pos.value=p }catch{}
+      try{ hidden.value = localStorage.getItem(HIDE_KEY)==='1' }catch{}
     }
 
-    // —— 拉 Stars / 更新时间 ——
+    function formatNumber(n){ if(n==null) return '—'; if(n>=1_000_000) return (n/1_000_000).toFixed(1)+'m'; if(n>=1_000) return (n/1_000).toFixed(1)+'k'; return String(n) }
+    function regionName(code){ try{ const dn=new Intl.DisplayNames([navigator.language||'zh-CN'],{type:'region'}); return dn.of(code)||code }catch{ return code } }
+    function flagEmoji(code){ if(!code||code.length!==2) return '🏳️'; const up=code.toUpperCase(); const A=0x1F1E6; return String.fromCodePoint(A+up.charCodeAt(0)-65)+String.fromCodePoint(A+up.charCodeAt(1)-65) }
+
+    async function ghGet(url){
+      const baseHeaders={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+      try{ const r=await fetch(url,{headers:baseHeaders,mode:'cors'}); if(r.ok) return await r.json() }catch{}
+      if(props.githubToken){
+        for(const scheme of [`Bearer ${props.githubToken}`,`token ${props.githubToken}`]){
+          try{ const r=await fetch(url,{headers:{...baseHeaders,'Authorization':scheme},mode:'cors'}); if(r.ok) return await r.json() }catch{}
+        }
+      }
+      return null
+    }
+
     async function fetchStars(){
-      if (!props.starsRepo) return;
-      try {
-        const r = await fetch(`https://api.github.com/repos/${props.starsRepo}`, {
-          headers: props.githubToken ? { Authorization: `Bearer ${props.githubToken}` } : undefined,
-        });
-        if (!r.ok) return;
-        const j = await r.json();
-        stars.value = j?.stargazers_count ?? null;
-      } catch {}
+      if(!props.starsRepo) return
+      try{
+        const d = await ghGet(`https://api.github.com/repos/${props.starsRepo}`)
+        if(d && d.stargazers_count!=null){
+          stars.value = d.stargazers_count
+          try{ localStorage.setItem(STARS_KEY, String(stars.value)) }catch{}
+        }
+      }catch{}
     }
     async function fetchUpdated(){
-      if (!props.updatedRepo) return;
-      try {
-        const r = await fetch(`https://api.github.com/repos/${props.updatedRepo}`, {
-          headers: props.githubToken ? { Authorization: `Bearer ${props.githubToken}` } : undefined,
-        });
-        if (!r.ok) return;
-        const j = await r.json();
-        const iso = j?.pushed_at || j?.updated_at || j?.created_at;
-        updatedAt.value = iso ? new Date(iso).toLocaleString() : '';
-      } catch {}
+      if(!props.updatedRepo) return
+      try{
+        const d = await ghGet(`https://api.github.com/repos/${props.updatedRepo}`)
+        const iso = d && (d.pushed_at || d.updated_at || d.created_at)
+        if(iso){
+          const dt=new Date(iso)
+          const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,'0'), day=String(dt.getDate()).padStart(2,'0')
+          const hh=String(dt.getHours()).padStart(2,'0'), mm=String(dt.getMinutes()).padStart(2,'0')
+          updatedAt.value = `${y}-${m}-${day} ${hh}:${mm}`
+          try{ localStorage.setItem(UPDATED_KEY, updatedAt.value) }catch{}
+        }
+      }catch{}
+    }
+    async function fetchVisitors(){
+      if(!props.visitorsApi) return
+      try{
+        const r = await fetch(props.visitorsApi,{cache:'no-store'})
+        if(!r.ok) throw 0
+        const data = await r.json()
+        let arr=[]
+        if(Array.isArray(data)) arr=data
+        else if(Array.isArray(data.countries)) arr=data.countries
+        else if(data && typeof data==='object') arr=Object.entries(data).map(([code,count])=>({code:String(code).toUpperCase(),count:Number(count)||0}))
+        countries.value = arr
+          .filter(x=>x && x.code && x.count>0)
+          .map(x=>({code:String(x.code).toUpperCase(),count:Number(x.count)||0}))
+          .sort((a,b)=>b.count-a.count)
+          .slice(0, props.topN)
+      }catch{ countries.value=[] }
+    }
+    async function collectVisit(){
+      if(!props.collectApi) return
+      try{
+        const body={ href:location.href, referrer:document.referrer||'', tz:Intl.DateTimeFormat().resolvedOptions().timeZone||'', lang:navigator.language||'', ua:navigator.userAgent||'' }
+        await fetch(props.collectApi,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      }catch{}
     }
 
-    onMounted(() => {
-      loadState();
-      fetchStars();
-      fetchUpdated();
-    });
+    onMounted(async ()=>{
+      loadState()
+      // 延迟到下一帧，避免某些 SSR/旧浏览器环境初始化冲突
+      await nextTick()
+      fetchStars(); fetchUpdated(); fetchVisitors(); collectVisit();
+    })
+    onBeforeUnmount(()=>onDragEnd())
 
-    return {
-      stars, updatedAt, hidden, pos,
-      onDragStart, onClose, onReopen
-    }
+    return { stars, updatedAt, countries, hidden, pos, onDragStart, onDragEnd, onClose, onReopen, formatNumber, regionName, flagEmoji, topN: props.topN }
   }
 }
+
 </script>
 
 <style scoped>
-/* —— 更窄：固定 200px —— */
-.impact-card {
-  position: fixed;
-  z-index: 1000;
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
-  background: #fff;
-  border: 1px solid #e6eefc;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(20,80,180,.08);
-  padding: 10px 12px;            /* padding 收紧 */
+.impact-card{
+  width:210px;
+  max-width:92vw;
+  background:#fff;
+  border:1px solid #e6eefc;
+  border-radius:16px;
+  box-shadow:0 6px 14px rgba(20,80,180,.08);
+  padding:6px;
 }
+.impact-card *{ word-wrap:break-word; overflow-wrap:anywhere; }
 
-.floating { pointer-events: auto; }
+.floating{ position:fixed; z-index:1000; bottom:16px; left:16px; }
+.close{
+  position:absolute; right:8px; top:6px;
+  width:20px; height:20px; border:none; border-radius:10px;
+  background:#eef3ff; color:#3659b5; cursor:pointer;
+}
+.close:hover{ background:#e5ecff; }
 
-.close {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  border: none;
-  background: transparent;
-  font-size: 16px;               /* 关按钮更小一点 */
-  cursor: pointer;
-  color: #6b7c9f;
+.metrics-fab{
+  position:fixed; z-index:1000; bottom:16px; left:16px;
+  width:36px; height:36px; border-radius:18px;
+  border:1px solid #d7e3ff; background:#f3f7ff; color:#3659b5;
+  box-shadow:0 4px 10px rgba(20,80,180,.12); cursor:pointer;
 }
+.metrics-fab:hover{ background:#e9f0ff; }
 
-/* 两列仍然保留，但间距/字重收紧 */
-.metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-.metric {
-  background: #f9fbff;
-  border: 1px solid #e6eefc;
-  border-radius: 8px;
-  padding: 6px;                  /* 盒内边距更小 */
-}
-.label  { font-size: 11px; color: #6b7c9f; }
-.value  {
-  font-size: 12px;               /* 数值更小 */
-  font-weight: 700;
-  color: #1a52c5;
-  line-height: 1.2;
-  word-break: break-word;        /* 长时间戳可换行 */
-}
+.metrics{ display:grid; grid-template-columns:repeat(2,1fr); gap:2px; margin-bottom:6px; }
+.metric{ background:linear-gradient(180deg,#f7faff,#fff); border:1px solid #e7edf9; border-radius:12px; padding:4px 6px; text-align:center; }
+.metric .label{ font-size:8.5px; color:#6b7c9f; letter-spacing:.3px; }
+.metric .value{ font-size:12.5px; font-weight:700; color:#1a52c5; margin-top:2px; }
 
-/* 说明文字不撑宽卡片 */
-.cta {
-  margin-top: 8px;
-  font-size: 11px;
-  color: #445;
-  line-height: 1.4;
-  white-space: normal;
-  word-break: break-word;
-}
+.countries{ margin-top:2px; }
+.countries-title{ font-size:9px; color:#6b7c9f; margin:4px 2px; }
+.country-list{ display:grid; grid-template-columns:1fr 1fr; gap:4px 6px; }
+.country{ background:#fff; border:1px dashed #e7edf9; border-radius:10px; padding:4px 6px; display:flex; align-items:center; gap:4px; }
+.flag{ font-size:13px; }
+.name{ font-size:10px; color:#2a3653; flex:1; }
+.count{ font-size:10px; color:#1a52c5; font-weight:700; }
 
-/* 右下角重开按钮 */
-.metrics-fab {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: 1px solid #e6eefc;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(20,80,180,.12);
-  cursor: pointer;
-  font-size: 14px;
-}
-/* 替换原来的 .cta 样式 */
-.cta {
-  margin-top: 8px;
-  font-size: 11px;
-  color: #445;
-  line-height: 1.6;
-  white-space: normal;
-  word-break: break-word;
-
-  /* 让段落左右对齐、更整齐 */
-  text-align: justify;         /* 两端对齐 */
-  text-justify: inter-word;    /* 单词级对齐 */
-  text-align-last: left;       /* 最后一行保持左对齐，避免看起来被拉伸 */
-  hyphens: auto;               /* 允许自动断词，提升对齐效果（支持的浏览器会生效） */
-}
-
+.cta{ margin-top:6px; padding:8px 10px; background:#f7fbff; border:1px dashed #e2eaff; color:#2a3653; border-radius:10px; font-size:10px; line-height:1.4; }
 </style>
