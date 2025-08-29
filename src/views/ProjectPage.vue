@@ -135,35 +135,35 @@
       </v-row>
     </v-container>
 
-    <!-- 返回顶部按钮 -->
-    <v-btn
-      v-show="showBackToTop"
-      fab
-      dark
-      fixed
-      bottom
-      right
-      color="blue darken-2"
-      @click="scrollToTop"
-      class="back-to-top-btn"
-    >
-      <v-icon>mdi-chevron-up</v-icon>
-    </v-btn>
-  
-  
-  <div v-if="__paper_rows && __paper_rows.length" style="display:grid;gap:12px;margin-top:16px;">
-    <PaperCard
-      v-for="(p, i) in __paper_rows"
-      :key="'pc-' + i"
-      :title="p['标题']"
-      :principleTag="p['10大原则']"
-      :stageTag="p['4个阶段']"
-      :firstAuthor="p['一作']"
-      :link="p['链接'] || '#'"
-    />
-  </div>
-  
 
+
+  
+<!-- 右下角贴边；两个“小小的”按钮 -->
+<FloatingFeedback
+  fixed
+  :offset-x="16"
+  :offset-y="16"
+  :reserve-below="0"
+  :button-height="36"
+/>
+
+<ImpactMetrics
+  stars-repo="owner/repo"
+  updated-repo="owner/repo"
+  visitors-api="https://old-union-b7eb.3034297530.workers.dev/visitors"
+  collect-api="https://old-union-b7eb.3034297530.workers.dev/collect"
+  :top-n="5"
+/>
+
+    <!-- 放在页面靠底部的位置 BibTeX-->
+      <v-container class="py-8">
+        <v-row justify="center">
+          <!-- 这里控制“窄”的程度可按需调整 -->
+          <v-col cols="12" sm="11" md="10" lg="9" xl="9">
+            <BibTeXSection class="mt-8" />
+          </v-col>
+        </v-row>
+      </v-container>
 </template>
 
 <script>
@@ -175,6 +175,43 @@ import csvData from '@/data/data.csv'
 import SubmitPaperClient from '@/components/SubmitPaperClient.vue'
 import { searchPapers } from '@/utils/paperSearch'  
 import { computed } from 'vue'
+import BibTeXSection from '@/components/BibTeXSection.vue'
+import FloatingFeedback from '@/components/FloatingFeedback.vue'
+import ImpactMetrics from '@/components/ImpactMetrics.vue'
+
+// === Sync feedback button width to match the Share button ===
+function syncFeedbackWidth() {
+  try {
+    const wrappers = Array.from(document.querySelectorAll('.spc-fixed'));
+    if (wrappers.length < 2) return;
+    const getBottom = el => {
+      const b = (el.style && el.style.bottom) ? el.style.bottom : getComputedStyle(el).bottom;
+      const v = parseFloat((b || '0').replace('px','')) || 0;
+      return v;
+    };
+    // assume Share has larger bottom (offsetY + 84) and feedback has smaller (offsetY + 0)
+    let shareWrap = null, fbWrap = null;
+    wrappers.forEach(w => {
+      const b = getBottom(w);
+      if (b > 40) shareWrap = w; else fbWrap = w;
+    });
+    if (!shareWrap || !fbWrap) return;
+    const btnShare = shareWrap.querySelector('.spc-btn');
+    const btnFb = fbWrap.querySelector('.spc-btn');
+    if (!btnShare || !btnFb) return;
+    const w = Math.round(btnShare.getBoundingClientRect().width);
+    if (w) btnFb.style.width = w + 'px';
+  } catch (e) { /* noop */ }
+}
+
+// call once after mount, and on resize
+onMounted(() => {
+  const tick = () => syncFeedbackWidth();
+  // run a few times to catch late hydration
+  const t = setInterval(tick, 150);
+  setTimeout(() => clearInterval(t), 2000);
+  window.addEventListener('resize', tick, { passive: true });
+});
 
 // 把已有的数据源“取一个能用的”作为别名传给 TagMatrix
 function toArr(x){ return Array.isArray(x) ? x : (Array.isArray(x?.value) ? x.value : []) }
@@ -210,7 +247,7 @@ const _containsPhrase = (titleWords, phraseTokens) => {
   return false
 }
 export default {
-  components: { PaperCard, TagMatrix, PaperIntro , SubmitPaperClient },
+  components: { PaperCard, TagMatrix, PaperIntro , BibTeXSection, SubmitPaperClient ,FloatingFeedback},
   data() {
     return {
       matrixFilteredRows: null,
@@ -470,6 +507,12 @@ export default {
 </script>
 
 <style scoped>
+/* Remove v-container left/right padding so full-bleed sections can reach viewport edges */
+.project-page{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
 /* 标题容器居中 */
 .header {
   text-align: center;
@@ -1068,5 +1111,19 @@ export default {
   .search-bar{ display:flex; align-items:center; gap:10px; justify-content:flex-end; top:-24px; flex-wrap:wrap !important; justify-content:stretch; }
   .search-input{ min-width:0; flex:1 1 100%; }
 }
+/* 让该页的 v-container 真正无左右留白（Vuetify 会默认加 24px） */
+:deep(.v-container.project-page) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 祖先容器允许横向溢出，否则 100vw 的背景会被裁掉 */
+:deep(#app),
+:deep(.v-application),
+:deep(.v-application--wrap),
+:deep(main) {
+  overflow-x: visible !important;
+}
+
 
 </style>

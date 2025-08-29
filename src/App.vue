@@ -17,4 +17,5 @@ export default {
 
 <style>
 /* 可以放一些全局CSS或者留空 */
+
 </style>

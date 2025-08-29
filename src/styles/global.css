@@ -1,40 +1,30 @@
-/* src/styles/global.css */
+/* src/styles/global.css (recentered, no right shift) */
 
 :root {
   --app-font: 'Inter', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-}
-
-html,
-body {
-  font-family: var(--app-font);
-}
-/* === 全局整体缩放 === */
-:root {
-  /* 你想缩放到的比例：0.9 相当于浏览器缩放 90% */
   --app-scale: 0.90;
 }
 
-/* 你的根容器，一般是 #app（如果不是，就改成实际的根元素选择器） */
+html, body {
+  margin: 0;
+  font-family: var(--app-font);
+  overflow-x: hidden; /* no horizontal scroll */
+}
+
+/* Use a single, robust path: transform + recenter. Avoid nonstandard zoom. */
 #app {
-  /* Chromium / Safari 原生支持 zoom，效果更好 */
-  zoom: var(--app-scale);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%) scale(var(--app-scale)); /* center first, then scale */
+  transform-origin: top center;
+  width: calc(100vw / var(--app-scale)); /* compensate width so visible area = 100vw */
+  margin: 0; /* margins handled by translateX centering */
 }
 
-/* Firefox 不支持 zoom，用 transform 兜底 */
-@supports not (zoom: 1) {
-  #app {
-    transform: scale(var(--app-scale));
-    transform-origin: top center;
-    /* 用宽度补偿 transform 带来的收缩，防止两侧留白 */
-    width: calc(100% / var(--app-scale));
-  }
-}
-
-/* 可选：小屏时不缩放，避免内容过小 */
+/* Optional: on small screens, don't scale to keep readability */
 @media (max-width: 1200px) {
   #app {
-    zoom: 1;
-    transform: none;
-    width: auto;
+    transform: translateX(-50%) scale(1);
+    width: 100vw;
   }
 }
