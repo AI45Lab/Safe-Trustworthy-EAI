@@ -17,10 +17,10 @@
         </template>
         </div>
 
-
-
 <!-- Affiliation -->
-<div class="aff-row">
+<div style="--aff-offset: 20px;">
+  <div class="aff-row">
+    <div class="aff-row">
   <a href="https://www.shlab.org.cn/" target="_blank" rel="noopener" class="aff-logo-link" aria-label="Shanghai AI Lab">
     <img src="@/assets/ailab.png" alt="Shanghai Artificial Intelligence Laboratory" class="aff-logo" />
   </a>
@@ -34,6 +34,11 @@
     </div>
   </div>
 </div>
+  </div>
+</div>
+
+
+
 
 <div class="aff-row">
 <a href="https://www.ecnu.edu.cn/" target="_blank" rel="noopener" class="aff-logo-link" aria-label="Shanghai AI Lab">
@@ -854,10 +859,37 @@ export default {
   .abs-band{ --abs-accent:#7dd3fc; --abs-stroke:rgba(148,163,184,.35); }
 }
 .abs-title::after{ content:none !important; display:none !important; }
-/* 放到你的 <style> 里 */
-.aff-logo--ecnu{ height:44px; width:auto; object-fit:contain; }
-@media (max-width:480px){
-  .aff-logo--ecnu{ height:36px; }  /* 小屏稍微收一收，可选 */
+/* 占满父级，建立独立居中环境 */
+:deep(.aff-center){ display:grid; width:100%; }
+
+/* 整组(logo+文字块)按内容定宽，然后在父级居中 */
+:deep(.aff-center > .aff-row){
+  justify-self:center;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:max-content;        /* 内容多宽就多宽 */
 }
+
+/* 基础样式 */
+:deep(.aff-logo-link), :deep(.aff-logo){ display:block; height:40px; }
+:deep(.aff-names){ display:flex; flex-direction:column; align-items:center; text-align:center; line-height:1.25; }
+/* 可调的左移量，默认 0 */
+:root { --aff-offset: 0px; }
+
+/* 整体硬居中 + 向左偏移 --aff-offset */
+:deep(.aff-row) {
+  position: relative;
+  left: 50%;
+  transform: translateX(calc(-50% - var(--aff-offset, 0px)));
+  width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 保持两行文字内部居中，不影响你原有等宽控制 */
+:deep(.aff-names) { display: flex; flex-direction: column; align-items: center; }
+:deep(.aff-cn), :deep(.aff-en) { text-align: center; margin: 0 auto; }
 
 </style>
