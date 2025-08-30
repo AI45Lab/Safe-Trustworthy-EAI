@@ -33,11 +33,24 @@
       Shanghai Artificial Intelligence Laboratory
     </div>
   </div>
-  
+</div>
 
+<div class="aff-row">
+<a href="https://www.ecnu.edu.cn/" target="_blank" rel="noopener" class="aff-logo-link" aria-label="Shanghai AI Lab">
+  <img src="@/assets/ecnu.png" alt="East China Normal University" class="aff-logo aff-logo--ecnu" />
+</a>
 
-  
-</div><!-- Visual + English Introduction -->
+  <div class="aff-names" title="">
+    <div ref="affCn" class="aff-cn" :style="{ width: affTargetWidth + 'px', letterSpacing: affCnLetterSpacing + 'px' }">
+      华东师范大学
+    </div>
+    <div ref="affEn" class="aff-en" :style="{ width: affTargetWidth + 'px', wordSpacing: affEnWordSpacing + 'px', letterSpacing: affEnLetterSpacing + 'px' }">
+      East China Normal University
+    </div>
+  </div>
+</div>
+
+<!-- Visual + English Introduction -->
 
 
 <!-- Abstract block START -->
@@ -841,5 +854,10 @@ export default {
   .abs-band{ --abs-accent:#7dd3fc; --abs-stroke:rgba(148,163,184,.35); }
 }
 .abs-title::after{ content:none !important; display:none !important; }
+/* 放到你的 <style> 里 */
+.aff-logo--ecnu{ height:44px; width:auto; object-fit:contain; }
+@media (max-width:480px){
+  .aff-logo--ecnu{ height:36px; }  /* 小屏稍微收一收，可选 */
+}
 
 </style>

@@ -172,6 +172,7 @@
       </v-container>
 </template>
 
+
 <script>
 import { ref, onMounted } from 'vue'
 import PaperIntro from '@/components/PaperIntro.vue'

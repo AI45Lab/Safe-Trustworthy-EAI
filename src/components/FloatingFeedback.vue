@@ -93,7 +93,7 @@ export default {
   props: {
     /* Impact metrics sources */
     starsRepo:   { type: String, default: 'PanQY25/Trustworthy-Embodied-AI' },
-    updatedRepo: { type: String, default: 'PanQY25/Trustworthy-Embodied-AI' },
+    updatedRepo: { type: String, default: 'PanQY25/Trustworthy-Embodied-AI-Page' },
     visitorsApi: { type: String, default: '' },
     collectApi:  { type: String, default: '' },
     githubToken: { type: String, default: '' },
