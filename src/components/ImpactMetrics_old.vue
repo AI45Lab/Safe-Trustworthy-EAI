@@ -1,4 +1,3 @@
-
 <template>
   <teleport to="body">
     <button v-if="hidden" class="metrics-fab" @click.stop="onReopen" aria-label="Open metrics">ⓘ</button>
@@ -22,18 +21,26 @@
       </div>
 
       <!-- 来访国家统计（可选显示） -->
-      <div v-if="countries.length" class="countries">
-        <div class="countries-title">来访国家统计（Top {{ topN }}）</div>
-        <div class="country-list">
-          <div v-for="c in countries" :key="c.code" class="country">
+      <div v-if="countries.length" class="countries-section">
+        <div class="section-header">Top Visitors</div>
+        <div class="country-grid">
+          <div v-for="c in countries.slice(0, 4)" :key="c.code" class="country">
             <span class="flag">{{ flagEmoji(c.code) }}</span>
-            <span class="name">{{ regionName(c.code) }}</span>
             <span class="count">{{ formatNumber(c.count) }}</span>
           </div>
         </div>
+        <!-- 总统计信息 -->
+        <div class="total-stats">
+          <div class="total-metric">
+            <div class="label">Countries</div>
+            <div class="value">{{ totalCountries }}</div>
+          </div>
+          <div class="total-metric">
+            <div class="label">Total Visits</div>
+            <div class="value">{{ formatNumber(totalVisits) }}</div>
+          </div>
+        </div>
       </div>
-
-      <div class="cta">{{ ctaText }}</div>
     </div>
   </teleport>
 </template>
@@ -44,6 +51,7 @@ const POS_KEY = 'IMPACT_METRICS_POS'
 const HIDE_KEY = 'IMPACT_METRICS_HIDE'
 const STARS_KEY = 'IMPACT_METRICS_STARS'
 const UPDATED_KEY = 'IMPACT_METRICS_UPDATED'
+const VISITORS_KEY = 'IMPACT_METRICS_VISITORS'
 
 export default {
   name: 'ImpactMetrics',
@@ -51,41 +59,35 @@ export default {
     starsRepo:   { type: String, default: '' },
     updatedRepo: { type: String, default: '' },
     githubToken: { type: String, default: '' },
-    visitorsApi: { type: String, default: 'https://old-union-b7eb.3034297530.workers.dev/visitors' },
-    collectApi:  { type: String, default: 'https://old-union-b7eb.3034297530.workers.dev/collect' },
+    ipinfoToken: { type: String, default: 'd0464380c91435' },
+    visitorsApi: { type: String, default: '' },
+    collectApi:  { type: String, default: '' },
     topN:        { type: Number, default: 5 },
     ctaText:     { type: String, default: '如果您对这项工作的优势或不足有任何看法，愿意分享您的工作，或在使用中遇到问题，欢迎点击下方按钮与我们交流。' },
   },
   setup(props){
+    // 所有reactive变量先定义
     const stars     = ref(null)
     const updatedAt = ref('')
     const countries = ref([])
     const hidden    = ref(false)
     const pos       = ref({ x: 16, y: 16 })
-
-    // 先加载缓存，避免出现 '—'
-    try{
-      const s = localStorage.getItem(STARS_KEY); if (s) stars.value = Number(s);
-      const u = localStorage.getItem(UPDATED_KEY); if (u) updatedAt.value = u;
-    }catch{}
-    // props 可能没传或传了空串，这里做兜底解析
-    const RESOLVED_VISITORS_API = computed(() =>
-      (props.visitorsApi && props.visitorsApi.trim())
-        ? props.visitorsApi.trim()
-        : 'https://old-union-b7eb.3034297530.workers.dev/visitors'
-    )
-
-    const RESOLVED_COLLECT_API = computed(() =>
-      (props.collectApi && props.collectApi.trim())
-        ? props.collectApi.trim()
-        : 'https://old-union-b7eb.3034297530.workers.dev/collect'
-    )
-
-    const clamp = (v,a,b)=>Math.min(Math.max(v,a),b)
+    const visitors  = ref({})
     const start = ref({x:0,y:0})
     const origin= ref({x:16,y:16})
     const dragging = ref(false)
 
+    // 计算属性
+    const totalCountries = computed(() => Object.keys(visitors.value).length)
+    const totalVisits = computed(() => Object.values(visitors.value).reduce((sum, count) => sum + count, 0))
+
+    // 工具函数
+    const clamp = (v,a,b)=>Math.min(Math.max(v,a),b)
+    function formatNumber(n){ if(n==null) return '—'; if(n>=1_000_000) return (n/1_000_000).toFixed(1)+'m'; if(n>=1_000) return (n/1_000).toFixed(1)+'k'; return String(n) }
+    function regionName(code){ try{ const dn=new Intl.DisplayNames([navigator.language||'zh-CN'],{type:'region'}); return dn.of(code)||code }catch{ return code } }
+    function flagEmoji(code){ if(!code||code.length!==2) return '🏳️'; const up=code.toUpperCase(); const A=0x1F1E6; return String.fromCodePoint(A+up.charCodeAt(0)-65)+String.fromCodePoint(A+up.charCodeAt(1)-65) }
+
+    // 拖拽相关函数
     function onDragStart(e){
       dragging.value = true
       const t = e.touches ? e.touches[0] : e
@@ -118,6 +120,8 @@ export default {
       window.removeEventListener('touchmove', onDragMove)
       window.removeEventListener('touchend', onDragEnd)
     }
+    
+    // 显示/隐藏相关函数
     function onClose(){ hidden.value=true; try{ localStorage.setItem(HIDE_KEY,'1') }catch{} }
     function onReopen(){ hidden.value=false; try{ localStorage.removeItem(HIDE_KEY) }catch{} }
     function loadState(){
@@ -125,10 +129,7 @@ export default {
       try{ hidden.value = localStorage.getItem(HIDE_KEY)==='1' }catch{}
     }
 
-    function formatNumber(n){ if(n==null) return '—'; if(n>=1_000_000) return (n/1_000_000).toFixed(1)+'m'; if(n>=1_000) return (n/1_000).toFixed(1)+'k'; return String(n) }
-    function regionName(code){ try{ const dn=new Intl.DisplayNames([navigator.language||'zh-CN'],{type:'region'}); return dn.of(code)||code }catch{ return code } }
-    function flagEmoji(code){ if(!code||code.length!==2) return '🏳️'; const up=code.toUpperCase(); const A=0x1F1E6; return String.fromCodePoint(A+up.charCodeAt(0)-65)+String.fromCodePoint(A+up.charCodeAt(1)-65) }
-
+    // GitHub相关函数
     async function ghGet(url){
       const baseHeaders={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
       try{ const r=await fetch(url,{headers:baseHeaders,mode:'cors'}); if(r.ok) return await r.json() }catch{}
@@ -164,137 +165,136 @@ export default {
         }
       }catch{}
     }
-    async function fetchVisitors(){
-      if(!props.visitorsApi) return
-      try{
-        const r = await fetch(RESOLVED_VISITORS_API.value, { cache: 'no-store' })
-        if(!r.ok) throw 0
-        const data = await r.json()
-        let arr=[]
-        if(Array.isArray(data)) arr=data
-        else if(Array.isArray(data.countries)) arr=data.countries
-        else if(data && typeof data==='object') arr=Object.entries(data).map(([code,count])=>({code:String(code).toUpperCase(),count:Number(count)||0}))
-        countries.value = arr
-          .filter(x=>x && x.code && x.count>0)
-          .map(x=>({code:String(x.code).toUpperCase(),count:Number(x.count)||0}))
-          .sort((a,b)=>b.count-a.count)
-          .slice(0, props.topN)
-      }catch{ countries.value=[] }
+
+    // 访客统计相关函数
+    function updateCountriesList(){
+      const arr = Object.entries(visitors.value)
+        .map(([code, count]) => ({
+          code: String(code).toUpperCase(),
+          count: Number(count) || 0
+        }))
+        .filter(x => x.code && x.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 4)
+      
+      countries.value = arr
+      console.log('[ImpactMetrics] Updated countries list:', arr)
     }
+
+    function loadVisitorsFromCache(){
+      try{
+        const stored = localStorage.getItem(VISITORS_KEY)
+        if(stored){
+          visitors.value = JSON.parse(stored)
+          console.log('[ImpactMetrics] Loaded visitors from cache:', visitors.value)
+        } else {
+          // 如果没有缓存数据，为了测试添加一些初始数据
+          visitors.value = { 'JP': 1 }
+          console.log('[ImpactMetrics] No cached data, using initial test data')
+        }
+        updateCountriesList()
+      }catch(e){
+        console.warn('[ImpactMetrics] Failed to load visitors from cache:', e)
+        // 出错时也添加测试数据
+        visitors.value = { 'JP': 1 }
+        updateCountriesList()
+      }
+    }
+
+    async function getVisitorLocation(){
+      if(!props.ipinfoToken) {
+        console.warn('[ImpactMetrics] No IPinfo token provided')
+        return null
+      }
+      try{
+        console.log('[ImpactMetrics] Fetching location from IPinfo...')
+        const response = await fetch(`https://ipinfo.io/json?token=${props.ipinfoToken}`)
+        if(!response.ok) throw new Error(`IPinfo API failed: ${response.status}`)
+        const data = await response.json()
+        console.log('[ImpactMetrics] IPinfo response:', data)
+        return data.country || null
+      }catch(e){
+        console.warn('[ImpactMetrics] Failed to get location from IPinfo:', e)
+        return null
+      }
+    }
+
     async function collectVisit(){
-      if(!props.collectApi) return
       try{
-        const body={ href:location.href, referrer:document.referrer||'', tz:Intl.DateTimeFormat().resolvedOptions().timeZone||'', lang:navigator.language||'', ua:navigator.userAgent||'' }
-        await fetch(RESOLVED_COLLECT_API.value,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-      }catch{}
+        const countryCode = await getVisitorLocation()
+        console.log('[ImpactMetrics] Detected country:', countryCode)
+        
+        if(!countryCode) {
+          console.warn('[ImpactMetrics] No country code detected')
+          return
+        }
+
+        // 从localStorage读取当前统计
+        let currentVisitors = {...visitors.value}
+
+        // 更新统计
+        currentVisitors[countryCode] = (currentVisitors[countryCode] || 0) + 1
+        visitors.value = currentVisitors
+
+        console.log('[ImpactMetrics] Updated visitors:', currentVisitors)
+
+        // 保存到localStorage
+        try{
+          localStorage.setItem(VISITORS_KEY, JSON.stringify(currentVisitors))
+        }catch{}
+
+        // 更新显示的国家列表
+        updateCountriesList()
+      }catch(e){
+        console.warn('[ImpactMetrics] Failed to collect visit:', e)
+      }
     }
+
+    // 初始化缓存数据
+    try{
+      const s = localStorage.getItem(STARS_KEY); if (s) stars.value = Number(s);
+      const u = localStorage.getItem(UPDATED_KEY); if (u) updatedAt.value = u;
+      const v = localStorage.getItem(VISITORS_KEY); if (v) visitors.value = JSON.parse(v);
+    }catch{}
 
     onMounted(async ()=>{
-    // === auto-injected: do not remove (minimal) ===
-    const __resolvedVisitors = (props?.visitorsApi && props.visitorsApi.trim()) || 'https://old-union-b7eb.3034297530.workers.dev/visitors';
-    const __resolvedCollect  = (props?.collectApi  && props.collectApi.trim())  || 'https://old-union-b7eb.3034297530.workers.dev/collect';
-
-    try { fetch(__resolvedCollect, { method: 'POST', keepalive: true }).catch(()=>{}); } catch {}
-
-    ;(async () => {
-      try {
-        const __r = await fetch(__resolvedVisitors, { cache: 'no-store' });
-        if (__r && __r.ok) {
-          const __j = await __r.json();
-          const __dict = Array.isArray(__j)
-            ? Object.fromEntries(__j.filter(Boolean).map(x => [String(x.code || '').toUpperCase(), Number(x.count || 0)]))
-            : (__j || {});
-
-          // 尝试写入 visitors.value（若存在）
-          try { if (typeof visitors !== 'undefined' && visitors && 'value' in visitors) visitors.value = __dict; } catch {}
-
-          // 尝试写入 countries / countries.value（若你的模板使用该变量）
-          try {
-            if (typeof countries !== 'undefined') {
-              const __arr = Object.entries(__dict).map(([code, count]) => ({ code, count }));
-              if (Array.isArray(countries)) {
-                countries.splice(0, countries.length, ...__arr);
-              } else if (countries && 'value' in countries) {
-                countries.value = __arr;
-              }
-            }
-          } catch {}
-        }
-      } catch {}
-    })();
-    // === /auto-injected ===
-
-    console.log('[ImpactMetrics] visitorsApi=', RESOLVED_VISITORS_API.value, 'collectApi=', RESOLVED_COLLECT_API.value)
-    // —— 强制上报一次（不依赖组件内部函数名）——
-try {
-  fetch(RESOLVED_COLLECT_API?.value ?? props.collectApi ?? '', {
-    method: 'POST',
-    keepalive: true,
-  }).catch(() => {});
-} catch {}
-
-// —— 强制拉取统计（不依赖组件内部函数名）——
-try {
-  fetch(RESOLVED_VISITORS_API?.value ?? props.visitorsApi ?? '', { cache: 'no-store' })
-    .then(r => r.ok ? r.json() : Promise.reject(r.status))
-    .then(j => {
-      // 兼容 { "JP":2 } 或 [{code:"JP",count:2}]
-      if (Array.isArray(j)) {
-        visitors.value = Object.fromEntries(
-          j.filter(Boolean).map(x => [String(x.code || '').toUpperCase(), Number(x.count || 0)])
-        )
-      } else if (j && typeof j === 'object') {
-        visitors.value = j
-      }
-    })
-    .catch(() => {});
-} catch {}
-
-// —— 双保险：下一轮事件循环再各跑一次 —— 
-setTimeout(() => {
-  try { fetch(RESOLVED_COLLECT_API?.value ?? props.collectApi ?? '', { method:'POST', keepalive:true }).catch(()=>{}); } catch {}
-  try {
-    fetch(RESOLVED_VISITORS_API?.value ?? props.visitorsApi ?? '', { cache:'no-store' })
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(j => {
-        if (Array.isArray(j)) {
-          visitors.value = Object.fromEntries(
-            j.filter(Boolean).map(x => [String(x.code || '').toUpperCase(), Number(x.count || 0)])
-          )
-        } else if (j && typeof j === 'object') {
-          visitors.value = j
-        }
-      })
-      .catch(()=>{});
-  } catch {}
-}, 0);
-
-    try { if (typeof fetchVisitors==='function') fetchVisitors(); } catch(e){}
-    try { if (typeof collectVisit==='function') collectVisit(); } catch(e){}
-    setTimeout(()=>{ try{ if (typeof fetchVisitors==='function') fetchVisitors(); }catch(e){} try{ if (typeof collectVisit==='function') collectVisit(); }catch(e){} }, 0);
-
+      console.log('[ImpactMetrics] Component mounted, ipinfoToken:', props.ipinfoToken ? 'provided' : 'not provided')
+      
       loadState()
-      // 延迟到下一帧，避免某些 SSR/旧浏览器环境初始化冲突
+      loadVisitorsFromCache()
+      
       await nextTick()
-      fetchStars(); fetchUpdated(); fetchVisitors(); collectVisit();
+      
+      fetchStars()
+      fetchUpdated()
+      
+      setTimeout(() => {
+        collectVisit()
+      }, 100)
     })
+    
     onBeforeUnmount(()=>onDragEnd())
   
-    return { stars, updatedAt, countries, hidden, pos, onDragStart, onDragEnd, onClose, onReopen, formatNumber, regionName, flagEmoji, topN: props.topN }
+    return { 
+      stars, updatedAt, countries, hidden, pos, 
+      onDragStart, onDragEnd, onClose, onReopen, 
+      formatNumber, regionName, flagEmoji, 
+      totalCountries, totalVisits,
+      topN: props.topN 
+    }
   }
 }
-
 </script>
 
 <style scoped>
 .impact-card{
-  width:210px;
+  width:220px;
   max-width:92vw;
   background:#fff;
   border:1px solid #e6eefc;
   border-radius:16px;
   box-shadow:0 6px 14px rgba(20,80,180,.08);
-  padding:6px;
+  padding:10px;
 }
 .impact-card *{ word-wrap:break-word; overflow-wrap:anywhere; }
 
@@ -314,18 +314,82 @@ setTimeout(() => {
 }
 .metrics-fab:hover{ background:#e9f0ff; }
 
-.metrics{ display:grid; grid-template-columns:repeat(2,1fr); gap:2px; margin-bottom:6px; }
-.metric{ background:linear-gradient(180deg,#f7faff,#fff); border:1px solid #e7edf9; border-radius:12px; padding:4px 6px; text-align:center; }
-.metric .label{ font-size:8.5px; color:#6b7c9f; letter-spacing:.3px; }
-.metric .value{ font-size:12.5px; font-weight:700; color:#1a52c5; margin-top:2px; }
+.metrics{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-bottom:10px; }
+.metric{ background:linear-gradient(180deg,#f7faff,#fff); border:1px solid #e7edf9; border-radius:12px; padding:6px 8px; text-align:center; }
+.metric .label{ font-size:9px; color:#6b7c9f; letter-spacing:.3px; }
+.metric .value{ font-size:13px; font-weight:700; color:#1a52c5; margin-top:2px; }
 
-.countries{ margin-top:2px; }
-.countries-title{ font-size:9px; color:#6b7c9f; margin:4px 2px; }
-.country-list{ display:grid; grid-template-columns:1fr 1fr; gap:4px 6px; }
-.country{ background:#fff; border:1px dashed #e7edf9; border-radius:10px; padding:4px 6px; display:flex; align-items:center; gap:4px; }
-.flag{ font-size:13px; }
-.name{ font-size:10px; color:#2a3653; flex:1; }
-.count{ font-size:10px; color:#1a52c5; font-weight:700; }
+.countries-section {
+  margin-top: 4px;
+}
 
-.cta{ margin-top:6px; padding:8px 10px; background:#f7fbff; border:1px dashed #e2eaff; color:#2a3653; border-radius:10px; font-size:10px; line-height:1.4; }
+.section-header {
+  font-size: 9px;
+  color: #6b7c9f;
+  letter-spacing: 0.3px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.country-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.country {
+  background:#f7faff; 
+  border:1px solid #e7edf9; 
+  border-radius:8px; 
+  padding:3px 4px; 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  gap:3px;
+}
+
+.flag { font-size:11px; }
+.count { font-size:10px; color:#1a52c5; font-weight:600; }
+
+.total-stats { 
+  display:grid; 
+  grid-template-columns:1fr 1fr; 
+  gap:6px; 
+  margin-top: 4px;
+}
+
+.total-metric { 
+  background:linear-gradient(180deg,#f7faff,#fff); 
+  border:1px solid #e7edf9; 
+  border-radius:12px; 
+  padding:5px 8px; 
+  text-align:center; 
+}
+
+.total-metric .label { font-size:8.5px; color:#6b7c9f; letter-spacing:.3px; }
+.total-metric .value { font-size:12.5px; font-weight:700; color:#1a52c5; margin-top:2px; }
+.section-header {
+  font-size: 10px;
+  color: #6b7c9f;
+  letter-spacing: 0.3px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.country {
+  background:#f7faff; 
+  border:1px solid #e7edf9; 
+  border-radius:8px; 
+  padding:4px; 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  gap:4px;
+}
+
+.flag { font-size: 13px; }
+.count { font-size: 12px; color:#1a52c5; font-weight:600; }
+
 </style>

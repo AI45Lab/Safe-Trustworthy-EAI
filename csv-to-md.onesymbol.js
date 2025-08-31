@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-/* csv-to-md.onesymbol.js — Read local CSV -> ONE Markdown
+/* csv-to-md.onesymbol.js — Read local CSV -> ONE Markdown with categorization
  *
  * Usage:
- *   yarn node csv-to-md.onesymbol.js --csv=data.csv --out=WEBSITE.md --title="Trustworthy-Embodied-AI"
+ *   yarn node csv-to-md.onesymbol.js --csv=data.csv --out=WEBSITE.md --title="Research Pipeline"
  *
  * Assumptions (default columns in Chinese):
  *   标题, 发表年月, 一作/第一作者, 链接, 以及若干 tag 列（包含 “原则/阶段/标签/tag” 关键字）
@@ -10,6 +10,7 @@
  * - 中文 tag 将按内置表映射到英文，未知词原样保留
  * - 自动检测分隔符: , ; | \t
  */
+
 const fs = require('fs');
 
 function parseArgs() {
@@ -87,6 +88,21 @@ const TAG_MAP = {
   "决策规划": "Action Planning"
 };
 
+// Grouping papers based on tags
+function groupByTags(data, tagKeys) {
+  const grouped = {};
+  data.forEach(row => {
+    let tags = [];
+    for (const k of tagKeys) tags = tags.concat(splitTags(row[k]));
+    tags = dedupe(tags.map(x => TAG_MAP[x] || x));
+    tags.forEach(tag => {
+      if (!grouped[tag]) grouped[tag] = [];
+      grouped[tag].push(row);
+    });
+  });
+  return grouped;
+}
+
 function dedupe(arr) {
   const out = [];
   const seen = new Set();
@@ -98,7 +114,7 @@ function main() {
   const args = parseArgs();
   const csvPath = args.csv || 'data.csv';
   const out = args.out || 'WEBSITE.md';
-  const title = args.title || 'Website';
+  const title = args.title || 'Research Pipeline';
 
   if (!fs.existsSync(csvPath)) {
     console.error('CSV not found:', csvPath);
@@ -125,35 +141,35 @@ function main() {
 
   const tagKeys = header.filter(h => /原则|阶段|标签|tag/i.test(h));
 
-  const items = [];
-  for (const row of data) {
-    const t = row[titleKey] || '';
-    const d = dateKey ? formatMonth(row[dateKey]) : '';
-    const a = authorKey ? row[authorKey] : '';
-    const u = linkKey ? row[linkKey] : '';
+  const groupedPapers = groupByTags(data, tagKeys);
 
-    let tags = [];
-    for (const k of tagKeys) tags = tags.concat(splitTags(row[k]));
-    tags = dedupe(tags.map(x => TAG_MAP[x] || x));
+  let mdContent = `# ${title}\n\n`;
 
-    let titleMd = `**${t || '(untitled)'}**`;
-    if (u) titleMd = `[${titleMd}](${u})`;
+  // Generate directory with clickable links
+  Object.keys(groupedPapers).forEach(tag => {
+    mdContent += `## ${tag}\n\n`;
+    groupedPapers[tag].forEach(row => {
+      const t = row[titleKey] || '';
+      const d = dateKey ? formatMonth(row[dateKey]) : '';
+      const a = authorKey ? row[authorKey] : '';
+      const u = linkKey ? row[linkKey] : '';
 
-    const meta = [];
-    if (a) meta.push(`_${a}_`);
-    if (d) meta.push(`(${d})`);
+      let titleMd = `**${t || '(untitled)'}**`;
+      if (u) titleMd = `[${titleMd}](${u})`;
 
-    let line = `- ${titleMd}`;
-    if (meta.length) line += ' — ' + meta.join(' ');
-    if (u) line += ` [🔗](${u})`;
+      const meta = [];
+      if (a) meta.push(`_${a}_`);
+      if (d) meta.push(`(${d})`);
 
-    if (tags.length) line += `\n  - Tags: ${tags.map(x => '`' + x + '`').join(' ')}`;
+      let line = `- ${titleMd}`;
+      if (meta.length) line += ' — ' + meta.join(' ');
+      if (u) line += ` [🔗](${u})`;
 
-    items.push(line);
-  }
+      mdContent += `- ${line}\n`;
+    });
+  });
 
-  const md = `# ${title}\n\n` + items.join('\n') + '\n';
-  fs.writeFileSync(out, md, 'utf8');
+  fs.writeFileSync(out, mdContent, 'utf8');
   console.log('[onesymbol] wrote', out);
 }
 
