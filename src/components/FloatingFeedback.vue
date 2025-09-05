@@ -92,8 +92,8 @@ export default {
   name: 'FloatingFeedback',
   props: {
     /* Impact metrics sources */
-    starsRepo:   { type: String, default: 'PanQY25/Trustworthy-Embodied-AI' },
-    updatedRepo: { type: String, default: 'PanQY25/Trustworthy-Embodied-AI-Page' },
+    starsRepo:   { type: String, default: 'AI45Lab/Awesome-Trustworthy-Embodied-AI' },
+    updatedRepo: { type: String, default: 'AI45Lab/Safe-Trustworthy-EAI' },
     visitorsApi: { type: String, default: '' },
     collectApi:  { type: String, default: '' },
     githubToken: { type: String, default: '' },

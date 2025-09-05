@@ -214,13 +214,13 @@ export default {
           { name: 'Xin Tan', homepage: 'https://tanxincs.github.io/', symbol: '*' },
           { name: 'Bangwei Liu', homepage: '#', symbol: '*' },
           { name: 'Yicheng Bao', homepage: '#' },
-          { name: 'Qijian Tian', homepage: '#' },
+          { name: 'Qijian Tian', homepage: 'https://fangzhou2000.github.io/' },
           { name: 'Zhenkun Gao', homepage: '#' },
           { name: 'Xiongbin Wu', homepage: '#' },
           { name: 'Zhihao Luo', homepage: '#' },
           { name: 'Sen Wang', homepage: '#' },
           { name: 'Yuqi Zhang', homepage: '#' },
-          { name: 'Xuhong Wang', homepage: '#', symbol: '†' },
+          { name: 'Xuhong Wang', homepage: 'https://wangxuhongcn.github.io', symbol: '†' },
           { name: 'Chaochao Lu', homepage: 'https://causallu.com/', symbol: '†' },
           { name: 'Bowen Zhou', homepage: 'https://scholar.google.com/citations?user=h3Nsz6YAAAAJ&hl=zh-CN&oi=ao', symbol: '†' }
         ],
@@ -1316,4 +1316,85 @@ export default {
 }
 
 /* end of toggle styles */
+/* ========== 1) 基础流式标尺与全局变量 ========== */
+:root {
+  --page-max: 1200px;
+  --space-1: clamp(0.5rem, 0.7vw, 0.8rem);
+  --space-2: clamp(0.8rem, 1.2vw, 1.2rem);
+  --radius-pill: 9999px;
+}
+
+/* 使用容器查询：让每个大块按自身宽度响应，而不是看视口 */
+.project-page { container-type: inline-size; max-width: var(--page-max); margin-inline: auto; }
+
+/* 断点全部改用 em（和缩放/系统默认字号联动） */
+@media (max-width: 80em) { /* 原 ~1280px */
+  :root { --page-max: 1100px; }
+}
+@media (max-width: 64em) { /* 原 ~1024px */
+  :root { --page-max: 1000px; }
+}
+
+/* ========== 2) 标题区：字号/装饰都随字体而不是视口 ========== */
+.header { text-align: center; padding: clamp(2rem, 4vw, 3.75rem) 0; margin-bottom: var(--space-2); }
+.title {
+  /* 以前 4.5rem/3rem -> 用 clamp 保持和谐 */
+  font-size: clamp(2rem, 4.5vw + 1rem, 4.5rem);
+  line-height: 1.08;
+  word-break: keep-all;
+}
+
+/* 原来用 vw 的下划光带，改成跟文字走的 em 尺寸 */
+.title-decor { position: relative; display: inline-block; }
+.title-decor::after{
+  content: "";
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  bottom: -0.35em;
+  width: clamp(6em, 65%, 20em);     /* 相对文字大小而不是视口 */
+  height: 0.28em;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, rgba(16,185,129,.18), rgba(56,189,248,.18), rgba(99,102,241,.18));
+  filter: blur(4px);
+}
+
+/* ========== 3) 搜索区：去 px 宽度 & 绝对定位、允许换行 ========== */
+.search-container { padding-inline: var(--space-2); }
+.search-bar{
+  display: flex; align-items: center; gap: var(--space-1);
+  flex-wrap: wrap;                    /* 缩放时允许换行 */
+  justify-content: flex-end;
+  position: static;                   /* 去掉 top:-32px 这类“魔法数位移” */
+}
+
+.search-input{
+  /* 原先 width: 720px !important -> 容器自适应 */
+  width: min(100%, clamp(16rem, 40vw, 40rem)) !important;
+  min-width: 12rem;                   /* 防止过窄 */
+  flex: 1 1 auto;                     /* 让输入框优先吃空间 */
+}
+
+.search-btn{
+  border-radius: var(--radius-pill) !important;
+  min-width: clamp(6.5rem, 12vw, 8.5rem);
+  height: clamp(2.5rem, 5vw, 3.25rem);
+  padding-inline: clamp(0.9rem, 2.5vw, 1.25rem) !important;
+}
+
+/* hover/active 不再用 translateY，避免缩放时“抖动” */
+.search-input .v-input__slot:hover,
+.search-input .v-input--is-focused .v-input__slot { transform: none; }
+
+/* ========== 4) TagMatrix 头部右侧按钮：与容器宽度联动 ========== */
+@container (max-width: 60rem) {
+  .search-bar { justify-content: stretch; }
+  .search-btn { order: 2; }
+}
+
+/* ========== 5) 移动端细化（仍然用 em 断点） ========== */
+@media (max-width: 48em){
+  .title { font-size: clamp(1.75rem, 6vw, 2.5rem); }
+  .search-input{ width: 100% !important; }
+}
+
 </style>

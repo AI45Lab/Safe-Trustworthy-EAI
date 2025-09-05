@@ -54,7 +54,7 @@ export default {
     visitorsApi: { type: String, default: '' },
     collectApi:  { type: String, default: '' },
     topN:        { type: Number, default: 5 },
-    ctaText:     { type: String, default: '如果您对这项工作的优势或不足有任何看法，愿意分享您的工作，或在使用中遇到问题，欢迎点击下方按钮与我们交流。' },
+    ctaText:     { type: String, default: '' },
   },
   setup(props){
     const stars     = ref(null)

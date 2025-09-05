@@ -11,7 +11,7 @@
         <a :href="a.homepage" target="_blank" rel="noopener" class="author">
           {{ a.name }}<sup v-if="getMark(a)" class="mark">{{ getMark(a) }}</sup>
         </a>
-        <span v-if="i < paper.authors.length - 1" class="sep"> ，</span>
+        <span v-if="i < paper.authors.length - 1" class="sep"> ,</span>
         <!-- 在 Zhihao Luo 后换行 -->
         <br v-if="a.name === 'Zhihao Luo'" />
       </template>
@@ -105,7 +105,7 @@
     <figure class="hero-image">
       <v-img src="/images/figure1.png" contain class="full-img" />
       <figcaption class="caption">
-        Figure 1. Capability–Safety divergence in the Embodied AI landscape
+        Figure 1. Capability-Safety divergence in the Embodied AI landscape
       </figcaption>
     </figure>
 

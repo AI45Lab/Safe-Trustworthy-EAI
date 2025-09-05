@@ -21,7 +21,7 @@ const props = defineProps({
   type: { type: String, default: 'misc' },
   keyId: { type: String, default: 'your_key_here' },
   title: { type: String, default: '<< Put Your Paper Title Here >>' },
-  authors: { type: Array, default: () => ['First Author', 'Second Author', 'Third Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author','Author'] },
+  authors: { type: Array, default: () => ['Xin Tan', 'Bangwei Liu', 'Yicheng Bao','Qijian Tian','Zhenkun Gao','Xiongbin Wu','Zhihao Luo','Sen Wang','Yuqi Zhang','Xuhong Wang','Chaochao Lu','Bowen Zhou'] },
   year: { type: [String, Number], default: '2025' },
   eprint: { type: String, default: '2501.xxxxx' },
   archivePrefix: { type: String, default: 'arXiv' },
