@@ -22,45 +22,75 @@
     <!-- Affiliation -->
     <!-- Affiliation -->
     <div class="aff-row">
-      <a href="https://www.shlab.org.cn/" target="_blank" rel="noopener" class="aff-logo-link"
-        aria-label="Shanghai AI Lab">
-        <img src="@/assets/ailab.png" alt="Shanghai Artificial Intelligence Laboratory" class="aff-logo" />
-      </a>
-
-      <div class="aff-names" title="">
-        <div ref="affCn" class="aff-cn"
-          :style="{ width: affTargetWidth + 'px', letterSpacing: affCnLetterSpacing + 'px' }">
-          上海人工智能实验室
-        </div>
-        <div ref="affEn" class="aff-en"
-          :style="{ width: affTargetWidth + 'px', wordSpacing: affEnWordSpacing + 'px', letterSpacing: affEnLetterSpacing + 'px' }">
-          Shanghai Artificial Intelligence Laboratory
+      <!-- 上海人工智能实验室 -->
+      <div class="aff-item">
+        <a href="https://www.shlab.org.cn/" target="_blank" rel="noopener" class="aff-logo-link"
+          aria-label="Shanghai AI Lab">
+          <img src="@/assets/ailab.png" alt="Shanghai Artificial Intelligence Laboratory" class="aff-logo" />
+        </a>
+        <div class="aff-names" title="">
+          <!-- 关键：不再绑定 :style 宽度/间距，由 CSS 控制等宽 -->
+          <div ref="affCn1" class="aff-cn">上海人工智能实验室</div>
+          <div ref="affEn1" class="aff-en">Shanghai Artificial Intelligence Laboratory</div>
         </div>
       </div>
 
-      <!-- Add spacing between the two affiliations -->
-      <div style="width: 120px;"></div>
-
-      <a href="https://www.ecnu.edu.cn/" target="_blank" rel="noopener" class="aff-logo-link"
-        aria-label="East China Normal University">
-        <img src="@/assets/ecnu.png" alt="East China Normal University" class="aff-logo" />
-      </a>
-
-      <div class="aff-names" title="">
-        <div ref="affCn" class="aff-cn"
-          :style="{ width: affTargetWidth + 'px', letterSpacing: affCnLetterSpacing + 'px' }">
-          华东师范大学
+      <!-- 华东师范大学 -->
+      <div class="aff-item">
+        <a href="https://www.ecnu.edu.cn/" target="_blank" rel="noopener" class="aff-logo-link"
+          aria-label="East China Normal University">
+          <img src="@/assets/ecnu.png" alt="East China Normal University" class="aff-logo" />
+        </a>
+        <div class="aff-names" title="">
+          <div ref="affCn2" class="aff-cn">华东师范大学</div>
+          <div ref="affEn2" class="aff-en">East China Normal University</div>
         </div>
-        <div ref="affEn" class="aff-en"
-          :style="{ width: affTargetWidth + 'px', wordSpacing: affEnWordSpacing + 'px', letterSpacing: affEnLetterSpacing + 'px' }">
-          East China Normal University
+      </div>
+
+      <!-- 清华大学 -->
+      <div class="aff-item">
+        <a href="https://www.tsinghua.edu.cn/" target="_blank" rel="noopener" class="aff-logo-link"
+          aria-label="Tsinghua University">
+          <img src="@/assets/thu.png" alt="Tsinghua University" class="aff-logo" />
+        </a>
+        <div class="aff-names" title="">
+          <div ref="affCn3" class="aff-cn">清华大学</div>
+          <div ref="affEn3" class="aff-en">Tsinghua University</div>
         </div>
       </div>
     </div>
-
     <!-- Visual + English Introduction -->
 
-
+<!-- 在作者信息后添加按钮 -->
+<div class="actions" v-if="paper.links">
+  <a v-if="paper.links.paper && paper.links.paper !== '#'" 
+     :href="paper.links.paper" 
+     target="_blank" 
+     class="action-btn">
+    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+    </svg>
+    Paper
+  </a>
+  
+  <a v-if="paper.links.code && paper.links.code !== '#'" 
+     :href="paper.links.code" 
+     target="_blank" 
+     class="action-btn">
+    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
+    </svg>
+    GitHub
+  </a>
+  
+  <a v-if="paper.links.arxiv && paper.links.arxiv !== '#'" 
+   :href="paper.links.arxiv" 
+   target="_blank" 
+   class="action-btn">
+  <i class="ai ai-arxiv"></i>
+  arXiv
+</a>
+</div>
     <!-- Abstract block START -->
     <!-- Abstract block START -->
     <section class="abs-band">
@@ -103,7 +133,7 @@
 
 
     <figure class="hero-image">
-      <v-img src="/images/figure1.png" contain class="full-img" />
+      <v-img :src="withBase('images/figure1.png')" contain class="full-img" />
       <figcaption class="caption">
         Figure 1. Capability-Safety divergence in the Embodied AI landscape
       </figcaption>
@@ -139,7 +169,7 @@
 
       <!-- Figure 2 image -->
       <figure class="f2-figure">
-        <img src="/images/figure2.png" alt="Figure 2: The five levels of Make Safe EAI" />
+        <img :src="withBase('images/figure2.png')" alt="Figure 2: The five levels of Make Safe EAI" />
         <figcaption>Figure 2. From Resistance (L1–L2) to Resilience (L3–L5).</figcaption>
       </figure>
 
@@ -217,6 +247,8 @@
 </template>
 
 <script>
+import { withBase } from '@/utils/base'
+
 export default {
   name: 'PaperIntro',
   props: { paper: { type: Object, default: () => ({ title: '', authors: [], affiliations: [] }) } },
@@ -230,13 +262,16 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      this.affMeasure();
-      window.addEventListener('resize', this.affMeasure);
+      this.equalizeAffPerItem();
+      window.addEventListener('resize', this.equalizeAffPerItem, { passive: true });
     });
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.affMeasure);
+    window.removeEventListener('resize', this.equalizeAffPerItem);
   },
+
+
+
   computed: {
     resolvedImages() {
       const arr = this.paper.images || []
@@ -251,6 +286,91 @@ export default {
      * - a.equalSymbol: 'asterisk' | 'dagger' | 'section' | 'star' | direct char
      * - a.equal: true|string for backward compatibility
      */
+    withBase,
+    // 用这个替换你现在的 equalizeAffPerItem / affMeasure（名字随你，mounted/resize 调它）
+    equalizeAffPerItem() {
+      const items = this.$el.querySelectorAll('.aff-item');
+
+      items.forEach((item) => {
+        const box = item.querySelector('.aff-names');
+        const cn = item.querySelector('.aff-cn');
+        const en = item.querySelector('.aff-en');
+        const logo = item.querySelector('.aff-logo');
+        if (!box || !cn || !en) return;
+
+        // 复位：取自然宽度
+        [cn, en].forEach((el) => {
+          el.style.width = 'auto';
+          el.style.letterSpacing = '0px';
+          el.style.wordSpacing = '0px';
+          el.style.paddingRight = '0px';
+          el.style.whiteSpace = 'nowrap';
+          el.style.display = 'inline-block'; // 允许 padding-right 精确补偿
+        });
+        box.style.width = 'auto';
+        box.style.flex = '0 0 auto';
+
+        // 当前可用宽度（避免小屏被撑开）
+        const cs = getComputedStyle(item);
+        const gapPx = parseFloat(cs.columnGap || cs.gap || '0');
+        const itemW = Math.round(item.getBoundingClientRect().width);
+        const logoW = logo ? Math.round(logo.getBoundingClientRect().width) : 0;
+        const avail = Math.max(0, itemW - logoW - gapPx - 2); // -2 容错
+
+        // 自然宽
+        const cnW = Math.ceil(cn.scrollWidth);
+        const enW = Math.ceil(en.scrollWidth);
+        const want = Math.max(cnW, enW);
+
+        // 目标宽度：不超过可用（小屏时避免“logo↔文字远”）
+        const target = Math.min(want, avail > 0 ? avail : want);
+        box.style.width = target + 'px';
+
+        // === 中文：按字间距拉伸，并用 padding-right 吃掉浮点误差 ===
+        const cnPure = (cn.textContent || '').replace(/\s+/g, '').replace(/[，。、“”‘’·—\-・]/g, '');
+        const cnGaps = Math.max(cnPure.length - 1, 0);
+        const cnDelta = target - cnW;
+        let cnPad = 0;
+        if (cnGaps > 0 && cnDelta > 0) {
+          let ls = cnDelta / cnGaps;          // 理论字间距
+          ls = Math.min(Math.max(ls, 0), 10); // 上限 10px，避免难看
+          const filled = ls * cnGaps;
+          cnPad = Math.max(0, target - (cnW + filled)); // 浮点误差补偿
+          cn.style.letterSpacing = ls.toFixed(3) + 'px';
+        }
+        cn.style.paddingRight = cnPad.toFixed(3) + 'px';
+        cn.style.width = target + 'px';
+
+        // === 英文：优先词间距，无空格再用字间距，同样做误差补偿 ===
+        const enText = en.textContent || '';
+        const spaces = (enText.match(/ /g) || []).length;
+        const enDelta = target - enW;
+        let enPad = 0;
+        if (enDelta > 0) {
+          if (spaces > 0) {
+            let ws = enDelta / spaces;
+            ws = Math.min(Math.max(ws, 0), 18); // 上限 18px
+            const filled = ws * spaces;
+            enPad = Math.max(0, target - (enW + filled));
+            en.style.wordSpacing = ws.toFixed(3) + 'px';
+          } else {
+            const letters = enText.replace(/\s+/g, '');
+            const gaps = Math.max(letters.length - 1, 0);
+            if (gaps > 0) {
+              let ls = enDelta / gaps;
+              ls = Math.min(Math.max(ls, 0), 6); // 英文字间距上限 6px
+              const filled = ls * gaps;
+              enPad = Math.max(0, target - (enW + filled));
+              en.style.letterSpacing = ls.toFixed(3) + 'px';
+            }
+          }
+        }
+        en.style.paddingRight = enPad.toFixed(3) + 'px';
+        en.style.width = target + 'px';
+      });
+    },
+
+
     getMark(a) {
       if (!a) return '';
       // 1) explicit character override
@@ -290,53 +410,23 @@ export default {
       return Math.max(t.length - 1, 1);
     },
     affMeasure() {
-      const cnEl = this.$refs.affCn;
-      const enEl = this.$refs.affEn;
-      if (!cnEl || !enEl) return;
+      // 清空之前可能残留的内联样式，交给 CSS 计算 max-content 宽度
+      const cnEls = [this.$refs.affCn1, this.$refs.affCn2, this.$refs.affCn3].filter(Boolean);
+      const enEls = [this.$refs.affEn1, this.$refs.affEn2, this.$refs.affEn3].filter(Boolean);
+      [...cnEls, ...enEls].forEach((el) => {
+        if (!el) return;
+        el.style.width = '';
+        el.style.letterSpacing = '';
+        el.style.wordSpacing = '';
+      });
 
-      // 暂时清空样式以获得自然宽度
-      const oldCnLS = cnEl.style.letterSpacing;
-      const oldCnW = cnEl.style.width;
-      const oldEnW = enEl.style.width;
-      const oldEnWS = enEl.style.wordSpacing;
-      const oldEnLS = enEl.style.letterSpacing;
-      cnEl.style.letterSpacing = '0px';
-      cnEl.style.width = 'max-content';
-      enEl.style.width = 'max-content';
-      enEl.style.wordSpacing = '0px';
-      enEl.style.letterSpacing = '0px';
-      enEl.style.width = 'max-content';
-
-      const cnBase = cnEl.getBoundingClientRect().width || 0;
-      const enW = enEl.getBoundingClientRect().width || 0;
-      const tgt = Math.max(cnBase, enW);
-
-      const gaps = this.affCountGaps(cnEl.textContent || '');
-      const spacing = gaps > 0 ? (tgt - cnBase) / gaps : 0;
-      const spacingClamped = Math.max(Math.min(spacing, 14), 0.5);
-
-      this.affTargetWidth = Math.max(tgt, cnBase + spacingClamped * gaps);
-      this.affCnLetterSpacing = spacingClamped;
-
-      const finalTarget = this.affTargetWidth;
-      const spaceCount = this.affCountEnSpaces(enEl.textContent || '');
-      if (spaceCount > 0) {
-        this.affEnWordSpacing = (finalTarget - enW) / spaceCount;
-        this.affEnLetterSpacing = 0;
-      } else {
-        const enGaps = this.affCountEnGaps(enEl.textContent || '');
-        this.affEnLetterSpacing = (finalTarget - enW) / enGaps;
-        this.affEnWordSpacing = 0;
-      }
-
-      cnEl.style.letterSpacing = oldCnLS;
-      cnEl.style.width = oldCnW;
-      enEl.style.width = oldEnW;
-      enEl.style.wordSpacing = oldEnWS;
-      enEl.style.letterSpacing = oldEnLS;
-      enEl.style.wordSpacing = oldEnWS;
-      enEl.style.letterSpacing = oldEnLS;
+      // 保留原有变量以兼容其它代码路径，但这里不再参与计算
+      this.affTargetWidth = 0;
+      this.affCnLetterSpacing = 0;
+      this.affEnWordSpacing = 0;
+      this.affEnLetterSpacing = 0;
     }
+
   }
 }
 </script>
@@ -407,12 +497,59 @@ export default {
 /* Action buttons */
 .actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
-  margin: 8px 0 16px;
+  margin: 16px 0 20px;
+}
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  background: #2d3748;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
+.action-btn:hover {
+  background: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 55, 72, 0.4);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+  .actions {
+    gap: 8px;
+  }
+  
+  .action-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
 .pill {
   border-radius: 999px;
   padding: 8px 14px;
@@ -822,18 +959,33 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 40px;
+  /* 增加机构之间的间距，防止重叠 */
   margin: 6px 0 14px;
+  flex-wrap: wrap;
+}
+
+.aff-item {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  /* 非常小的间距，或者设为0完全紧贴 */
+  margin: 4px 0;
 }
 
 .aff-logo-link {
   line-height: 0;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .aff-logo {
   height: 40px;
   width: auto;
   display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .aff-names {
@@ -843,6 +995,9 @@ export default {
   white-space: nowrap;
   user-select: text;
   -webkit-user-select: text;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .aff-cn {
@@ -1181,4 +1336,162 @@ export default {
   content: none !important;
   display: none !important;
 }
-</style>
+
+/* 小屏幕适配 */
+/* 小屏幕适配 */
+/* 小屏幕适配 */
+/* 小屏幕适配 */
+@media (max-width: 768px) {
+  .aff-row {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .aff-item {
+    justify-content: center;
+    width: 100%;
+    gap: 0;
+    /* 小屏幕上也完全紧贴 */
+  }
+
+  .aff-logo {
+    height: 36px;
+  }
+
+  .aff-cn {
+    font-size: 15px;
+  }
+
+  .aff-en {
+    font-size: 12px;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .aff-row {
+    gap: 24px;
+  }
+
+  .aff-item {
+    gap: 0;
+    /* 超小屏幕也完全紧贴 */
+  }
+
+  .aff-logo {
+    height: 32px;
+  }
+
+  .aff-cn {
+    font-size: 14px;
+  }
+
+  .aff-en {
+    font-size: 11px;
+  }
+
+}
+
+/* —— Affiliation（唯一权威版本） —— */
+.aff-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  margin: 6px 0 14px;
+}
+
+.aff-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  column-gap: 8px;
+}
+
+/* logo 贴文字 */
+.aff-logo {
+  flex: 0 0 auto;
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.aff-names {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.25;
+  width: auto;
+}
+
+.aff-cn,
+.aff-en {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.aff-cn {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.aff-en {
+  font-size: 12.5px;
+  opacity: .82;
+}
+
+/* 小屏收紧（但不再设置 min-width） */
+@media (max-width: 768px) {
+  .aff-row {
+    gap: 24px;
+    flex-direction: column;
+  }
+
+  .aff-item {
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+    column-gap: 6px;
+  }
+
+  .aff-logo {
+    height: 36px;
+  }
+
+  .aff-cn {
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+
+  .aff-en {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .aff-row {
+    gap: 20px;
+  }
+
+  .aff-item {
+    gap: 4px;
+    column-gap: 4px;
+  }
+
+  .aff-logo {
+    height: 32px;
+  }
+
+  .aff-cn {
+    font-size: 14px;
+  }
+
+  .aff-en {
+    font-size: 11px;
+  }
+}</style>

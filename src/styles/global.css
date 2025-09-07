@@ -1,30 +1,93 @@
-/* src/styles/global.css (recentered, no right shift) */
+/* ===========================
+   global.css (replace all)
+   解决：因 #app 全局缩放导致的底部大空白、
+        外边距塌陷、Vuetify 容器默认留白等
+   =========================== */
 
+/* 你想要的整体缩放比例（PC 端），可按需调整 */
 :root {
-  --app-font: 'Inter', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  --app-scale: 0.90;
+  --app-scale: 0.90; /* 0.9 = 缩小 10% */
 }
 
-html, body {
+/* 让窗口固定为视口高度，滚动交给 #app */
+html,
+body {
+  height: 100%;
   margin: 0;
-  font-family: var(--app-font);
-  overflow-x: hidden; /* no horizontal scroll */
+  padding: 0;
+  overflow: hidden;            /* 关键：不要让 body 滚动 */
+  scroll-padding-bottom: 0 !important;
 }
 
-/* Use a single, robust path: transform + recenter. Avoid nonstandard zoom. */
+/* 避免 body 伪元素/第三方脚本撑高页面 */
+body::before,
+body::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* #app 作为滚动容器，并做缩放后的宽高补偿 */
 #app {
   position: relative;
+  height: 100%;
+  /* 仅纵向滚动；横向用 hidden 防止补偿宽度造成的溢出条 */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* 居中 + 缩放。注意：transform 不参与布局，需要下面的补偿 */
   left: 50%;
-  transform: translateX(-50%) scale(var(--app-scale)); /* center first, then scale */
+  transform: translateX(-50%) scale(var(--app-scale));
   transform-origin: top center;
-  width: calc(100vw / var(--app-scale)); /* compensate width so visible area = 100vw */
-  margin: 0; /* margins handled by translateX centering */
+
+  /* 宽高补偿：把视觉缩小后的区域扩回布局尺寸 */
+  width: calc(100vw / var(--app-scale));
+  min-height: calc(100vh / var(--app-scale));
+
+  /* 细节优化 */
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: transform;
 }
 
-/* Optional: on small screens, don't scale to keep readability */
+/* ===== 底部留白与塌陷的通用修复 ===== */
+
+/* 形成 BFC，阻止最后子元素 margin-bottom 向外塌陷 */
+#app,
+.v-application__wrap,
+.project-page {
+  display: flow-root !important;   /* 或改为 overflow:auto; 二选一 */
+}
+
+/* 收紧页面最后一个区块的底部间距 */
+#app > *:last-child,
+.project-page > *:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Vuetify 容器默认有底部 padding，收一下 */
+.v-container.project-page {
+  padding-bottom: 0 !important;
+}
+
+/* 防止链式 min-height/height 把外层拉爆 */
+.v-application__wrap,
+.project-page {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* 如果用了 v-layout--full-height，当前页面禁用它的强制全高 */
+.project-page .v-layout--full-height {
+  min-height: auto !important;
+}
+
+/* ===== 自适应：小屏禁用缩放，保证可读性 ===== */
 @media (max-width: 1200px) {
   #app {
     transform: translateX(-50%) scale(1);
     width: 100vw;
+    min-height: 100vh;
   }
 }

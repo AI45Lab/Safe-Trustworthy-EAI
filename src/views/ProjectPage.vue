@@ -33,7 +33,7 @@
 
             <div class="search-bar">
               <v-text-field v-model="searchKeyword" class="search-input" dense outlined prepend-inner-icon="mdi-magnify"
-                placeholder="Search papers by title, author..." clearable @keyup.enter="filterPapers" hide-details />
+                placeholder="Search papers by title" clearable @keyup.enter="filterPapers" hide-details />
               <v-btn class="search-btn" small elevation="0" @click="filterPapers">
                 Search
               </v-btn>
@@ -227,8 +227,9 @@ export default {
         affiliation: 'Shanghai Artificial Intelligence Laboratory',
 
         links: {
-          paper: '#',
-          //code:  '#',
+          paper: 'https://ai45lab.github.io/Awesome-Trustworthy-Embodied-AI/',
+          code:  'https://github.com/ai45lab/Awesome-Trustworthy-Embodied-AI',
+          arxiv: 'https://ai45lab.github.io/Awesome-Trustworthy-Embodied-AI/',
           // project: '#',
           // dataset: '#'
         },
@@ -459,14 +460,15 @@ export default {
 /* Remove v-container left/right padding so full-bleed sections can reach viewport edges */
 .project-page {
   padding-left: 0 !important;
-  padding-right: 0 !important;
-}
+  padding-right: 0 !important;}
 
 /* 标题容器居中 */
 .header {
   text-align: center;
-  padding: 60px 0;
-  margin-bottom: 30px;
+  padding-block: clamp(24px, 6vw, 60px); padding-inline: 0;
+  margin-bottom: clamp(12px, 3vw, 30px);margin-left: auto;
+  margin-right: auto;
+  margin-top: clamp(16px, 4.5vw, 64px);
 }
 
 /* 标题样式 - 超大字号，更吸引眼球 */
@@ -475,7 +477,7 @@ export default {
   position: relative;
   z-index: 0;
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
-  font-size: clamp(2.6rem, 6.2vw, 4.4rem);
+  font-size: clamp(1.8rem, 5.2vw, 4.4rem);
   font-weight: 900;
   line-height: 1.04;
   letter-spacing: -0.02em;
@@ -490,6 +492,8 @@ export default {
     0 10px 28px rgba(2, 6, 23, .06);
   /* far ambient */
 
+
+  white-space: nowrap; overflow: visible;
 }
 
 /* 发光动画效果 */
@@ -558,7 +562,9 @@ export default {
   .title {
     font-size: 3rem;
     /* 移动设备上稍小一些 */
-  }
+  
+  white-space: nowrap; overflow: visible;
+}
 
   .title .v-icon {
     font-size: 3rem !important;
@@ -566,7 +572,7 @@ export default {
   }
 
   .title::after {
-    width: 80px;
+    width: clamp(56px, 20vw, 80px);
   }
 }
 
@@ -574,7 +580,9 @@ export default {
   .title {
     font-size: 2.2rem;
     padding: 0 10px 25px 0;
-  }
+  
+  white-space: nowrap; overflow: visible;
+}
 
   .title .v-icon {
     font-size: 2.2rem !important;
@@ -594,7 +602,9 @@ export default {
     0 4px 15px rgba(0, 0, 0, 0.04);
   margin: 0 auto 40px auto;
   max-width: 1560px;
-  /* 由 1400 -> 1560：扩大整体内容宽度，右侧更宽以达居中 */
+  /* 由 1400 -> 1560：扩大整体内容宽度，右侧更宽以达居中 */box-sizing: border-box;
+
+  overflow: clip;
 }
 
 /* 搜索行样式 - 更宽敞的布局 */
@@ -722,7 +732,7 @@ export default {
   position: relative;
   max-width: 1380px;
   /* 由 1400 -> 1560：右边更宽，视觉居中 */
-  margin: 16px auto 40px;
+  margin: 16px auto 40px;box-sizing: border-box;
 }
 
 /* 响应式设计 */
@@ -730,8 +740,10 @@ export default {
   .search-container {
     max-width: 95%;
     padding: 25px 20px;
-    margin: 0 auto 30px auto;
-  }
+    margin: 0 auto 30px auto;box-sizing: border-box;
+
+  overflow: clip;
+}
 
   .search-row {
     flex-direction: column;
@@ -767,8 +779,7 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 1.5em; height: 1.5em;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: white;
   border-radius: 4px;
@@ -791,7 +802,7 @@ export default {
   border-radius: 999px !important;
   background: #f8fafc !important;
   border: 1px solid #e2e8f0 !important;
-  height: 60px;
+  min-height: clamp(44px, 6vw, 60px);
 }
 
 .search-input .v-field__outline {
@@ -819,7 +830,7 @@ export default {
 }
 
 .search-btn {
-  height: 56px;
+  min-height: clamp(42px, 5.5vw, 56px);
   border-radius: 999px;
   padding: 0 18px;
   font-size: 1.05rem;
@@ -863,7 +874,9 @@ export default {
 
 /* Tighten container spacing */
 .search-container {
-  padding: 20px 24px;
+  padding: 20px 24px;box-sizing: border-box;
+
+  overflow: clip;
 }
 
 .search-row {
@@ -877,6 +890,8 @@ export default {
   align-items: center;
   gap: 12px;
   margin-top: 12px;
+
+  white-space: nowrap; overflow: visible;
 }
 
 .title-icon {
@@ -889,15 +904,15 @@ export default {
 .title {
   letter-spacing: 0.02em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25), 0 8px 24px rgba(37, 99, 235, .18);
+
+  white-space: nowrap; overflow: visible;
 }
 
 .title::after {
   content: "";
   display: block;
-  width: 110px;
-  height: 6px;
+  width: clamp(72px, 12vw, 110px);
   margin: 14px auto 0;
-  border-radius: 999px;
   background: linear-gradient(90deg, #22d3ee, #2563eb);
   box-shadow: 0 6px 24px rgba(37, 99, 235, .25);
 }
@@ -905,8 +920,8 @@ export default {
 
 .title-chip {
   display: inline-block;
-  padding: .22em .72em;
-  margin: 0 .14em;
+  padding: clamp(.12em, .14em + .3vw, .22em) clamp(.36em, .4em + .5vw, .72em);
+  margin: 0 clamp(.04em, .05em + .3vw, .14em);
   border-radius: 999px;
   background: linear-gradient(110deg, rgba(16, 185, 129, .95), rgba(34, 211, 238, .95));
   color: #fff;
@@ -1025,6 +1040,78 @@ export default {
 }
 
 /* end of toggle styles */
+
+@media (max-width: 1280px) {
+  .search-container { width: 100% !important; }
+  .tag-matrix-container { max-width: 100% !important; width: 100% !important; }
+}
+
+/* Make tables use full width without squishing columns too early */
+.tag-matrix-container table { width: 100%; table-layout: auto; }
+
+
+/* Make the intro cards slightly smaller and prevent collisions on narrower widths */
+paper-intro { display:block; }
+
+:deep(paper-intro) { 
+  font-size: clamp(.88rem, 1vw, 1rem);
+}
+
+@media (max-width: 1600px) {
+  :deep(paper-intro) { transform: scale(.94); transform-origin: top center; }
+}
+@media (max-width: 1440px) {
+  :deep(paper-intro) { transform: scale(.9); transform-origin: top center; }
+}
+@media (max-width: 1280px) {
+  :deep(paper-intro) { transform: scale(.86); }
+}
+
+
+/* ==== Fix: prevent overlap in Figure 2 cards (second row) ====
+   将第二行的卡片布局统一成与第一行一致，并在页面缩放时避免重叠。
+   注意：全部写成 :deep(...) 选择器，仅影响 paper-intro 内的 figure2。
+============================================================== */
+:deep(.figure2-section) {
+  --f2-gap: 16px;
+}
+
+/* 顶部/底部两行统一使用自适应网格；缩放/缩放回时不会因为像素取整出现错位 */
+:deep(.figure2-section .f2-row-top),
+:deep(.figure2-section .f2-row-bottom) {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: var(--f2-gap);
+  align-items: stretch;
+}
+
+/* 卡片统一为常规文档流元素，去掉可能造成重叠的定位/位移/固定宽高 */
+:deep(.figure2-section .f2-card) {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* 第二行卡片强制继承第一行的样式（防止“紧凑/特殊”样式导致高度异常） */
+:deep(.figure2-section .f2-row-bottom .f2-card) {
+  min-height: auto !important;
+}
+
+/* 保险起见，避免内容强制不换行导致撑开或重叠 */
+:deep(.figure2-section.f2-compact *) {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+
 </style>
 
 <style scoped>
@@ -1034,16 +1121,16 @@ export default {
   /* 整体更窄 */
   /* width: min(96vw, 1480px); */
   margin-left: auto;
-  margin-right: auto;
-}
+  margin-right: auto;}
 
 /* 让搜索框稍微窄一点点 */
 .search-input {
   width: 100%;
-  max-width: 300px;
-  min-width: 180px;
-  flex: 0 0 auto;
+  max-width: none;
+  min-width: 280px;
+  flex: 1 1 auto;
 }
+
 
 /* 让 Search 按钮更圆（胶囊形） */
 .search-btn {
@@ -1077,7 +1164,9 @@ export default {
 /* === zoom-safe inline search row === */
 .search-container {
   width: min(1200px, 100% - 48px);
-  margin: 0 auto 24px;
+  margin: 0 auto 24px;box-sizing: border-box;
+
+  overflow: clip;
 }
 
 .search-row {
@@ -1111,14 +1200,15 @@ export default {
   flex: 0 0 auto;
   margin-left: 0;
   /* background-color: red; */
+  width: 100%;
 }
-
 .search-input {
-  width: 420px !important;
+  width: 100% !important; max-width: none; flex: 1 1 auto;
   /* smaller input */
   max-width: 100%;
   box-sizing: border-box;
-  flex: 0 1 auto;
+  /* flex shrink override removed */
+  flex: 1 1 auto;
 }
 
 .search-btn {
@@ -1178,7 +1268,6 @@ export default {
   align-items: center;
   gap: 10px;
   justify-content: flex-end;
-  align-items: center;
 }
 
 /* undo any previous left-corner flattening */
@@ -1211,7 +1300,9 @@ export default {
 
 /* === Align "Search" with right edge so it vertically lines up with the CTA below === */
 .search-container {
-  width: 77%;
+  width: 77%;box-sizing: border-box;
+
+  overflow: clip;
 }
 
 .search-bar {
@@ -1231,8 +1322,12 @@ export default {
 
 /* keep the input compact */
 .search-input {
-  width: 720px !important;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  width: 100% !important;
+  max-width: none;
+  min-width: 280px;
+  /* flex reset removed */
+  flex: 1 1 auto;
 }
 
 /* Hide the right-side CTA line inside TagMatrix header (generic, non-invasive) */
@@ -1258,7 +1353,7 @@ export default {
 
   .search-input {
     /* max-width: 100%; */
-    max-width: 200px;
+    max-width: 100%;
   }
 
   .search-btn {
@@ -1275,9 +1370,7 @@ export default {
     top: -24px;
     flex-wrap: wrap !important;
     justify-content: stretch;
-    background-color: green;
-
-  }
+    }
 
   .search-input {
     min-width: 0;
@@ -1316,85 +1409,80 @@ export default {
 }
 
 /* end of toggle styles */
-/* ========== 1) 基础流式标尺与全局变量 ========== */
-:root {
-  --page-max: 1200px;
-  --space-1: clamp(0.5rem, 0.7vw, 0.8rem);
-  --space-2: clamp(0.8rem, 1.2vw, 1.2rem);
-  --radius-pill: 9999px;
+
+
+
+@media (max-width: 1280px) {
+  .search-container { width: 100% !important; }
+  .tag-matrix-container { max-width: 100% !important; width: 100% !important; }
 }
 
-/* 使用容器查询：让每个大块按自身宽度响应，而不是看视口 */
-.project-page { container-type: inline-size; max-width: var(--page-max); margin-inline: auto; }
+/* Make tables use full width without squishing columns too early */
+.tag-matrix-container table { width: 100%; table-layout: auto; }
 
-/* 断点全部改用 em（和缩放/系统默认字号联动） */
-@media (max-width: 80em) { /* 原 ~1280px */
-  :root { --page-max: 1100px; }
-}
-@media (max-width: 64em) { /* 原 ~1024px */
-  :root { --page-max: 1000px; }
-}
 
-/* ========== 2) 标题区：字号/装饰都随字体而不是视口 ========== */
-.header { text-align: center; padding: clamp(2rem, 4vw, 3.75rem) 0; margin-bottom: var(--space-2); }
-.title {
-  /* 以前 4.5rem/3rem -> 用 clamp 保持和谐 */
-  font-size: clamp(2rem, 4.5vw + 1rem, 4.5rem);
-  line-height: 1.08;
-  word-break: keep-all;
+/* Make the intro cards slightly smaller and prevent collisions on narrower widths */
+paper-intro { display:block; }
+
+:deep(paper-intro) { 
+  font-size: clamp(.88rem, 1vw, 1rem);
 }
 
-/* 原来用 vw 的下划光带，改成跟文字走的 em 尺寸 */
-.title-decor { position: relative; display: inline-block; }
-.title-decor::after{
-  content: "";
-  position: absolute;
-  left: 50%; transform: translateX(-50%);
-  bottom: -0.35em;
-  width: clamp(6em, 65%, 20em);     /* 相对文字大小而不是视口 */
-  height: 0.28em;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, rgba(16,185,129,.18), rgba(56,189,248,.18), rgba(99,102,241,.18));
-  filter: blur(4px);
+@media (max-width: 1600px) {
+  :deep(paper-intro) { transform: scale(.94); transform-origin: top center; }
+}
+@media (max-width: 1440px) {
+  :deep(paper-intro) { transform: scale(.9); transform-origin: top center; }
+}
+@media (max-width: 1280px) {
+  :deep(paper-intro) { transform: scale(.86); }
 }
 
-/* ========== 3) 搜索区：去 px 宽度 & 绝对定位、允许换行 ========== */
-.search-container { padding-inline: var(--space-2); }
-.search-bar{
-  display: flex; align-items: center; gap: var(--space-1);
-  flex-wrap: wrap;                    /* 缩放时允许换行 */
-  justify-content: flex-end;
-  position: static;                   /* 去掉 top:-32px 这类“魔法数位移” */
+
+
+
+/* ==== Fix: prevent overlap in Figure 2 cards (second row) ====
+   将第二行的卡片布局统一成与第一行一致，并在页面缩放时避免重叠。
+   注意：全部写成 :deep(...) 选择器，仅影响 paper-intro 内的 figure2。
+============================================================== */
+:deep(.figure2-section) {
+  --f2-gap: 16px;
 }
 
-.search-input{
-  /* 原先 width: 720px !important -> 容器自适应 */
-  width: min(100%, clamp(16rem, 40vw, 40rem)) !important;
-  min-width: 12rem;                   /* 防止过窄 */
-  flex: 1 1 auto;                     /* 让输入框优先吃空间 */
+/* 顶部/底部两行统一使用自适应网格；缩放/缩放回时不会因为像素取整出现错位 */
+:deep(.figure2-section .f2-row-top),
+:deep(.figure2-section .f2-row-bottom) {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: var(--f2-gap);
+  align-items: stretch;
 }
 
-.search-btn{
-  border-radius: var(--radius-pill) !important;
-  min-width: clamp(6.5rem, 12vw, 8.5rem);
-  height: clamp(2.5rem, 5vw, 3.25rem);
-  padding-inline: clamp(0.9rem, 2.5vw, 1.25rem) !important;
+/* 卡片统一为常规文档流元素，去掉可能造成重叠的定位/位移/固定宽高 */
+:deep(.figure2-section .f2-card) {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
-/* hover/active 不再用 translateY，避免缩放时“抖动” */
-.search-input .v-input__slot:hover,
-.search-input .v-input--is-focused .v-input__slot { transform: none; }
-
-/* ========== 4) TagMatrix 头部右侧按钮：与容器宽度联动 ========== */
-@container (max-width: 60rem) {
-  .search-bar { justify-content: stretch; }
-  .search-btn { order: 2; }
+/* 第二行卡片强制继承第一行的样式（防止“紧凑/特殊”样式导致高度异常） */
+:deep(.figure2-section .f2-row-bottom .f2-card) {
+  min-height: auto !important;
 }
 
-/* ========== 5) 移动端细化（仍然用 em 断点） ========== */
-@media (max-width: 48em){
-  .title { font-size: clamp(1.75rem, 6vw, 2.5rem); }
-  .search-input{ width: 100% !important; }
+/* 保险起见，避免内容强制不换行导致撑开或重叠 */
+:deep(.figure2-section.f2-compact *) {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
 }
+
 
 </style>

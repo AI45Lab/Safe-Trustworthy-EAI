@@ -8,7 +8,7 @@
       <span v-else class="title disabled" :title="title">{{ title }}</span>
       <div class="tags-row">
         <span
-          v-for="(t, i) in tagsRow"
+          v-for="(t, i) in displayTags"
           :key="'tag-' + i"
           class="pill"
           :class="t.kind === 'stage' ? 'pill-stage' : (t.tone === 'trust' ? 'pill-trust' : 'pill-safety')"
@@ -41,7 +41,7 @@
 
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -51,6 +51,22 @@ const props = defineProps({
   link: { type: String, required: true },
   fontScale: { type: Number, default: 1.12 },
   pubDate: { type: String, default: '' },
+})
+
+// 响应式检测移动端
+const isMobile = ref(false)
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 640
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 
 /* -------- 规整 & 映射 -------- */
@@ -140,11 +156,52 @@ function parseStages(raw){
 const principleList = computed(() => parsePrinciples(props.principleTag))
 const stageList     = computed(() => parseStages(props.stageTag))
 
-// 第一行的顺序：右边先显示“阶段(蓝)”，左边接着“原则(绿)”
+// 第一行的顺序：右边先显示"阶段(蓝)"，左边接着"原则(绿)"
 const tagsRow = computed(() => [
   ...stageList.value.map(label => ({ label, kind: 'stage' })),
   ...principleList.value.map(label => ({ label, kind: 'principle', tone: String(label).startsWith('Trustworthiness') ? 'trust' : 'safety' })),
 ])
+
+// 移动端标签显示逻辑：每种类型最多显示一个，总数不超过2个
+const displayTags = computed(() => {
+  if (!isMobile.value) {
+    return tagsRow.value
+  }
+  
+  // 移动端：严格限制为最多2个标签
+  const result = []
+  let hasStage = false
+  let hasSafety = false
+  let hasTrust = false
+  
+  // 优先显示Stage标签（如果有的话）
+  for (const tag of tagsRow.value) {
+    if (result.length >= 2) break // 严格限制最多2个
+    
+    if (tag.kind === 'stage' && !hasStage) {
+      result.push(tag)
+      hasStage = true
+    }
+  }
+  
+  // 然后显示Principle标签
+  for (const tag of tagsRow.value) {
+    if (result.length >= 2) break // 严格限制最多2个
+    
+    if (tag.kind === 'principle') {
+      if (tag.tone === 'safety' && !hasSafety) {
+        result.push(tag)
+        hasSafety = true
+      } else if (tag.tone === 'trust' && !hasTrust && !hasSafety) {
+        // 如果还没有任何principle标签，可以显示trust
+        result.push(tag)
+        hasTrust = true
+      }
+    }
+  }
+  
+  return result
+})
 
 /* -------- 统一补全为绝对外链，避免被当成本站路由 -------- */
 const safeHref = computed(() => {

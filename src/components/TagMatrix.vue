@@ -294,7 +294,8 @@ function clearAll(){ activePairs.clear(); query.value = '' }
 
 /* Toolbar */
 .tmx__toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding-right: var(--edge-r,24px); }
-.tmx__spacer{ flex:1 1 auto; }
+.tmx__spacer{ display:none;
+  flex:0 0 auto; }
 .tmx__cta-right{ display:flex; align-items:center; gap:12px; }
 .tmx__title{ display:flex; align-items:center; gap:10px; }
 .tmx__title .bar{ width:6px; height:20px; border-radius:3px; background:linear-gradient(180deg, #10b981, #60a5fa); }
@@ -459,10 +460,24 @@ function clearAll(){ activePairs.clear(); query.value = '' }
 
 /* Keep toolbar one-line on desktop; allow wrap on small screens */
 .tmx__toolbar{ flex-wrap: nowrap; }
-.tmx__left-actions{ display:flex; align-items:center; gap:12px; margin-left:12px; }
+.tmx__left-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex:1 1 auto;   /* 关键 */
+  min-width:0; /* 新增两句 */
+}
+
 @media (max-width: 1024px){
   .tmx__toolbar{ flex-wrap: wrap; }
   .tmx__left-actions{ margin-left:0; }
 }
+/* TagMatrix.vue —— 版心宽度 */
+.tmx{
+  width:100%;
+  max-width:1200px;   /* 按你想要的上限调整 */
+  margin:0 auto;
+}
+
 
 </style>

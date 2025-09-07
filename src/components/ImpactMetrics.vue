@@ -6,7 +6,7 @@
     <div v-else class="impact-card floating"
       :style="{ left: pos.x + 'px', bottom: pos.y + 'px' }"
       @mousedown="onDragStart"
-      @touchstart.prevent="onDragStart">
+      @touchstart.self.prevent="onDragStart">
       <button class="close" aria-label="Close" @click.stop="onClose">×</button>
 
       <!-- 第一行：基础指标 -->
