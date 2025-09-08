@@ -7,16 +7,26 @@
 
     <!-- Authors -->
     <div class="authors">
-      <template v-for="(a, i) in (paper.authors || [])" :key="a.name">
-        <a :href="a.homepage" target="_blank" rel="noopener" class="author">
-          {{ a.name }}<sup v-if="getMark(a)" class="mark">{{ getMark(a) }}</sup>
-        </a>
-        <span v-if="i < paper.authors.length - 1" class="sep"> ,</span>
-        <!-- 在 Zhihao Luo 后换行 -->
-        <br v-if="a.name === 'Zhihao Luo'" />
-      </template>
-    </div>
-
+    <!-- 
+      直接在HTML中手动列出每一位作者。
+      - 名字和符号包裹在 <a> 标签内。
+      - 符号本身放在 <sup> 标签内。
+      - 作者之间的逗号用 <span class="sep"> 分隔。
+    -->
+    <a href="https://tanxincs.github.io/" target="_blank" class="author">Xin&nbsp;Tan<sup>*</sup></a><span class="sep">, </span>
+    <a href="#" target="_blank" class="author">Bangwei&nbsp;Liu<sup>*</sup></a><span class="sep">, </span>
+    <a href="#" target="_blank" class="author">Yicheng&nbsp;Bao</a><span class="sep">, </span>
+    <a href="https://fangzhou2000.github.io/" target="_blank" class="author">Qijian&nbsp;Tian</a><span class="sep">, </span>
+    <a href="#" target="_blank" class="author">Zhenkun&nbsp;Gao</a><span class="sep">, </span>
+    <a href="#" target="_blank" class="author">Xiongbin&nbsp;Wu</a><span class="sep">, </span>
+    <a href="#" target="_blank" class="author">Zhihao&nbsp;Luo</a><span class="sep">, </span>
+    <br /> <!-- 在这里手动换行 -->
+    <a href="#" target="_blank" class="author">Sen&nbsp;Wang</a><span class="sep">, </span>
+    <a href="#" target="_blank" class="author">Yuqi&nbsp;Zhang</a><span class="sep">, </span>
+    <a href="https://wangxuhongcn.github.io" target="_blank" class="author">Xuhong&nbsp;Wang<sup>&sect;</sup></a><span class="sep">, </span>
+    <a href="https://causallu.com/" target="_blank" class="author">Chaochao&nbsp;Lu<sup>&sect;&dagger;</sup></a><span class="sep">, </span>
+    <a href="https://scholar.google.com/citations?user=h3Nsz6YAAAAJ&hl=zh-CN&oi=ao" target="_blank" class="author">Bowen&nbsp;Zhou<sup>&sect;&Dagger;</sup></a>
+  </div>
 
 
     <!-- Affiliation -->
@@ -61,36 +71,30 @@
     </div>
     <!-- Visual + English Introduction -->
 
-<!-- 在作者信息后添加按钮 -->
-<div class="actions" v-if="paper.links">
-  <a v-if="paper.links.paper && paper.links.paper !== '#'" 
-     :href="paper.links.paper" 
-     target="_blank" 
-     class="action-btn">
-    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-    </svg>
-    Paper
-  </a>
-  
-  <a v-if="paper.links.code && paper.links.code !== '#'" 
-     :href="paper.links.code" 
-     target="_blank" 
-     class="action-btn">
-    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
-    </svg>
-    GitHub
-  </a>
-  
-  <a v-if="paper.links.arxiv && paper.links.arxiv !== '#'" 
-   :href="paper.links.arxiv" 
-   target="_blank" 
-   class="action-btn">
-  <i class="ai ai-arxiv"></i>
-  arXiv
-</a>
-</div>
+    <!-- 在作者信息后添加按钮 -->
+    <div class="actions" v-if="paper.links">
+      <a v-if="paper.links.paper && paper.links.paper !== '#'" :href="paper.links.paper" target="_blank"
+        class="action-btn">
+        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+        </svg>
+        Paper(Coming Soon)
+      </a>
+
+      <a v-if="paper.links.code && paper.links.code !== '#'" :href="paper.links.code" target="_blank" class="action-btn">
+        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z" />
+        </svg>
+        GitHub
+      </a>
+
+      <a v-if="paper.links.arxiv && paper.links.arxiv !== '#'" :href="paper.links.arxiv" target="_blank"
+        class="action-btn">
+        <i class="ai ai-arxiv"></i>
+        arXiv(Coming Soon)
+      </a>
+    </div>
     <!-- Abstract block START -->
     <!-- Abstract block START -->
     <section class="abs-band">
@@ -248,10 +252,32 @@
 
 <script>
 import { withBase } from '@/utils/base'
-
+import { ref } from 'vue';
 export default {
   name: 'PaperIntro',
   props: { paper: { type: Object, default: () => ({ title: '', authors: [], affiliations: [] }) } },
+  setup() {
+    // 1. 把 authors 的定义放在 setup 函数内部
+    const authors = ref([
+      { name: 'Xin Tan',      nameHtml: 'Xin Tan<sup>*</sup>',                  homepage: 'https://tanxincs.github.io/' },
+      { name: 'Bangwei Liu',  nameHtml: 'Bangwei Liu<sup>*</sup>',                homepage: '#' },
+      { name: 'Yicheng Bao',  nameHtml: 'Yicheng Bao',                          homepage: '#' },
+      { name: 'Qijian Tian',  nameHtml: 'Qijian Tian',                          homepage: 'https://fangzhou2000.github.io/' },
+      { name: 'Zhenkun Gao',  nameHtml: 'Zhenkun Gao',                          homepage: '#' },
+      { name: 'Xiongbin Wu',  nameHtml: 'Xiongbin Wu',                          homepage: '#' },
+      { name: 'Zhihao Luo',   nameHtml: 'Zhihao Luo',                           homepage: '#' },
+      { name: 'Sen Wang',     nameHtml: 'Sen Wang',                             homepage: '#' },
+      { name: 'Yuqi Zhang',   nameHtml: 'Yuqi Zhang',                           homepage: '#' },
+      { name: 'Xuhong Wang',  nameHtml: 'Xuhong Wang<sup>&sect;</sup>',           homepage: 'https://wangxuhongcn.github.io' },
+      { name: 'Chaochao Lu',  nameHtml: 'Chaochao Lu<sup>&sect;&dagger;</sup>',   homepage: 'https://causallu.com/' },
+      { name: 'Bowen Zhou',   nameHtml: 'Bowen Zhou<sup>&sect;&Dagger;</sup>',    homepage: 'https://scholar.google.com/citations?user=h3Nsz6YAAAAJ&hl=zh-CN&oi=ao' }
+    ]);
+
+    // 2. 必须把 authors 返回，这样 template 才能使用它
+    return {
+      authors
+    };
+  },
   data() {
     return {
       affTargetWidth: 0,
@@ -461,14 +487,14 @@ export default {
 }
 
 .author {
-  color: #3b82f6;
+  color: #2d3748;
   /* 浅蓝 */
   text-decoration: none;
   font-weight: 500;
 }
 
 .author:hover {
-  color: #2563eb;
+  color: #546a9e;
   /* hover 更深蓝 */
   text-decoration: underline;
 }
@@ -502,6 +528,7 @@ export default {
   justify-content: center;
   margin: 16px 0 20px;
 }
+
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -539,17 +566,18 @@ export default {
   .actions {
     gap: 8px;
   }
-  
+
   .action-btn {
     padding: 8px 16px;
     font-size: 13px;
   }
-  
+
   .btn-icon {
     width: 14px;
     height: 14px;
   }
 }
+
 .pill {
   border-radius: 999px;
   padding: 8px 14px;
@@ -1494,4 +1522,67 @@ export default {
   .aff-en {
     font-size: 11px;
   }
-}</style>
+}
+
+.authors .mark-container {
+  vertical-align: super;
+  line-height: 0;
+  color: #000;
+  display: inline-block;
+}
+
+.authors .mark-container span {
+  display: inline-block;
+
+  /* 关键：底部对齐 */
+}
+
+.authors .section-char {
+  font-size: 0.9em;
+  transform: scale(0.7);
+  /* §缩放到80% */
+  transform-origin: center bottom;
+  /* 从底部缩放 */
+  top: -0.8em;
+}
+
+.authors .normal-char {
+  font-size: 0.9em;
+}
+.author {
+  color: #2d3748; /* 这是一个示例深蓝色，请改成您想要的颜色 */
+  text-decoration: none;
+}
+.author:hover {
+  text-decoration: underline;
+}
+
+
+/* 
+  ==================================================================
+  这是最关键的一行代码：
+  我们专门选中 .author 内部的 <sup> 标签（也就是角标）
+  并只修改它的样式。
+  ==================================================================
+*/
+.author sup {
+  /* 1. 将角标的颜色强制设置为黑色 */
+  color: black;
+
+  /* 
+    2. (强烈推荐保留) 修正符号大小不一致的问题。
+    这会让 § † ‡ 等符号使用更适合它们的字体来渲染，看起来就统一了。
+  */
+  font-family: 'Times New Roman', serif;
+}
+
+
+/* 其他辅助样式 */
+.authors {
+  line-height: 1.8;
+}
+.sep {
+  /* 让逗号和作者名字颜色一致 */
+  color: #34495e; 
+}
+</style>

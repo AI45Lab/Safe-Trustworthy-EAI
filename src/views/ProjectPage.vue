@@ -220,9 +220,9 @@ export default {
           { name: 'Zhihao Luo', homepage: '#' },
           { name: 'Sen Wang', homepage: '#' },
           { name: 'Yuqi Zhang', homepage: '#' },
-          { name: 'Xuhong Wang', homepage: 'https://wangxuhongcn.github.io', symbol: '†' },
-          { name: 'Chaochao Lu', homepage: 'https://causallu.com/', symbol: '†' },
-          { name: 'Bowen Zhou', homepage: 'https://scholar.google.com/citations?user=h3Nsz6YAAAAJ&hl=zh-CN&oi=ao', symbol: '†' }
+          { name: 'Xuhong Wang', homepage: 'https://wangxuhongcn.github.io', symbol: '§' },
+          { name: 'Chaochao Lu', homepage: 'https://causallu.com/', symbol: '§†' },
+          { name: 'Bowen Zhou', homepage: 'https://scholar.google.com/citations?user=h3Nsz6YAAAAJ&hl=zh-CN&oi=ao', symbol: '§‡' }
         ],
         affiliation: 'Shanghai Artificial Intelligence Laboratory',
 

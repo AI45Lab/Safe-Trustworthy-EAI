@@ -90,4 +90,7 @@ body::after {
     width: 100vw;
     min-height: 100vh;
   }
+  .mark {
+    font-family: "Noto Sans Symbols", "Arial Unicode MS", sans-serif;
+  }
 }
