@@ -128,16 +128,32 @@ export default {
     if (typeof process !== 'undefined' && process.env && process.env.BASE_URL) {
       BASE = process.env.BASE_URL || BASE;
     }
-    async function readStaticMetrics(repo){
-      try{
-        const res = await fetch(`${BASE}impact_metrics.json`, { cache: 'no-cache' });
-        if(!res.ok) throw 0;
-        const all = await res.json();
-        return (all && all[repo]) ? all[repo] : null;
-      }catch(e){
-        return null;
-      }
+    let __IMPACT_JSON_CACHE = null;
+function metricsURL() {
+  try {
+    const b = document.querySelector('base')?.getAttribute('href')
+            || location.pathname.replace(/[^/]*$/, ''); // 当前目录
+    return (b.endsWith('/') ? b : b + '/') + 'impact_metrics.json';
+  } catch { return 'impact_metrics.json'; }
+}
+    async function readStaticMetrics(repo) {
+  try {
+    if (!__IMPACT_JSON_CACHE) {
+      const res = await fetch(metricsURL(), { cache: 'no-cache' });
+      if (!res.ok) throw 0;
+      __IMPACT_JSON_CACHE = await res.json();
     }
+    const wanted = (repo || '').trim();
+    if (!wanted) return null;
+    if (__IMPACT_JSON_CACHE[wanted]) return __IMPACT_JSON_CACHE[wanted];
+    // 大小写不敏感匹配，容错键名差异
+    const lower = wanted.toLowerCase();
+    for (const k of Object.keys(__IMPACT_JSON_CACHE)) {
+      if (k.toLowerCase() === lower) return __IMPACT_JSON_CACHE[k];
+    }
+    return null;
+  } catch { return null; }
+}
 async function ghGet(url){
       const baseHeaders={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
       try{ const r=await fetch(url,{headers:baseHeaders,mode:'cors'}); if(r.ok) return await r.json() }catch{}
@@ -170,25 +186,52 @@ async function fetchStars(){
     }
 
     
-async function fetchUpdated(){
-      if(!props.updatedRepo) return
-      try{
-        let iso = null
-        const stat = await readStaticMetrics(props.updatedRepo)
-        if(stat) iso = stat.pushed_at || stat.updated_at || stat.created_at
-        if(!iso){
-          const d = await ghGet(`https://api.github.com/repos/${props.updatedRepo}`)
-          if(d) iso = d.pushed_at || d.updated_at || d.created_at
-        }
-        if(iso){
-          const dt=new Date(iso)
-          const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,'0'), day=String(dt.getDate()).padStart(2,'0')
-          const hh=String(dt.getHours()).padStart(2,'0'), mm=String(dt.getMinutes()).padStart(2,'0')
-          updatedAt.value = `${y}-${m}-${day} ${hh}:${mm}`
-          try{ localStorage.setItem(UPDATED_KEY, updatedAt.value) }catch{}
-        }
-      }catch{}
+// 如果你文件里还没有 IS_PROD，可在文件顶部加这一行：
+// const IS_PROD = (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production');
+
+async function fetchUpdated() {
+  if (!props.updatedRepo) return;
+
+  try {
+    // 1) 生产优先读静态 JSON
+    let iso = null;
+    const stat = await readStaticMetrics(props.updatedRepo);
+    if (stat) {
+      // 优先级：updated_at → pushed_at → created_at
+      iso = stat.updated_at || stat.pushed_at || stat.created_at;
     }
+
+    // 2) 本地开发才回退 GitHub API（线上不回退，避免403/限流）
+    if (!iso && !IS_PROD) {
+      try {
+        const r = await fetch(`https://api.github.com/repos/${(props.updatedRepo || '').trim()}`, {
+          headers: {
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        });
+        if (r.ok) {
+          const d = await r.json();
+          iso = d?.updated_at || d?.pushed_at || d?.created_at;
+        }
+      } catch {}
+    }
+
+    // 3) 渲染
+    if (iso) {
+      const dt = new Date(iso);
+      // 和你原来显示格式保持一致（本地时区，精确到分钟）
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2, '0');
+      const d = String(dt.getDate()).padStart(2, '0');
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mm = String(dt.getMinutes()).padStart(2, '0');
+      updatedAt.value = `${y}-${m}-${d} ${hh}:${mm}`;
+      try { localStorage.setItem('IMPACT_METRICS_UPDATED', updatedAt.value); } catch {}
+    }
+  } catch {}
+}
+
 
     async function fetchVisitors(){
       if(!props.visitorsApi) return
