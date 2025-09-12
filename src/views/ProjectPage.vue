@@ -227,9 +227,9 @@ export default {
         affiliation: 'Shanghai Artificial Intelligence Laboratory',
 
         links: {
-          paper: 'https://ai45lab.github.io/Awesome-Trustworthy-Embodied-AI/',
+          paper: 'https://openreview.net/pdf?id=Eu6Yt21Alv',
           code:  'https://github.com/ai45lab/Awesome-Trustworthy-Embodied-AI',
-          arxiv: 'https://ai45lab.github.io/Awesome-Trustworthy-Embodied-AI/',
+          //arxiv: 'https://ai45lab.github.io/Awesome-Trustworthy-Embodied-AI/',
           // project: '#',
           // dataset: '#'
         },
