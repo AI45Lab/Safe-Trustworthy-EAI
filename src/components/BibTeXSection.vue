@@ -18,25 +18,23 @@
 import { computed, ref } from 'vue'
 
 const props = defineProps({
-  type: { type: String, default: 'misc' },
-  keyId: { type: String, default: 'your_key_here' },
-  title: { type: String, default: '<< Put Your Paper Title Here >>' },
-  authors: { type: Array, default: () => ['Xin Tan', 'Bangwei Liu', 'Yicheng Bao','Qijian Tian','Zhenkun Gao','Xiongbin Wu','Zhihao Luo','Sen Wang','Yuqi Zhang','Xuhong Wang','Chaochao Lu','Bowen Zhou'] },
-  year: { type: [String, Number], default: '2025' },
-  eprint: { type: String, default: '2501.xxxxx' },
-  archivePrefix: { type: String, default: 'arXiv' },
-  primaryClass: { type: String, default: 'cs.LG' },
-  url: { type: String, default: 'https://arxiv.org/abs/2501.xxxxx' }
+  type: { type: String, default: 'article' },
+  keyId: { type: String, default: 'tan2025safetrustworthyeai' },
+  title: { type: String, default: 'Towards Safe and Trustworthy Embodied AI: Foundations, Status, and Prospects' },
+  authors: { type: Array, default: () => ['Tan, Xin', 'Liu, Bangwei', 'Bao, Yicheng','Tian, Qijian','Gao, Zhenkun','Wu, Xiongbin','Luo, Zhihao','Wang, Sen','Zhang, Yuqi','Wang, Xuhong','Lu, Chaochao','Zhou, Bowen'] },
+  journal: { type: String, default: 'Open Review'},
+  url: { type: URL, default: () => new URL('https://openreview.net/pdf?id=Eu6Yt21Alv') },
+
+  year: { type: [String, Number], default: '2025' }
+
 })
 
 const bibtex = computed(() => `@${props.type}{${props.keyId},
   title={${props.title}},
   author={${props.authors.join(' and ')}},
-  year={${props.year}},
-  eprint={${props.eprint}},
-  archivePrefix={${props.archivePrefix}},
-  primaryClass={${props.primaryClass}},
+  journal={${props.journal}},
   url={${props.url}},
+  year={${props.year}}
 }`)
 
 const copying = ref(false)
