@@ -2,13 +2,25 @@
   <article class="paper-card" :style="{ '--pc-scale': String(fontScale) }">
     <!-- 顶部一行：左=标题(可省略) 右=tag(一行从右往左) -->
     <div class="top-row">
-      <a class="title" :href="safeHref" target="_blank" rel="noopener noreferrer" :title="title" @click.stop v-if="safeHref && safeHref !== '#'">
+      <!-- 标题 & 左侧可见标签，保持你现在的实现 -->
+      <a class="title" :href="safeHref" target="_blank" rel="noopener" :title="title" @click.stop v-if="safeHref && safeHref !== '#'">
         {{ title }}
       </a>
       <span v-else class="title disabled" :title="title">{{ title }}</span>
+
+      <!-- 标签行（保持） -->
       <div class="tags-row">
+        <!-- "更多"按钮：去掉原生 title，避免黑白提示 -->
         <span
-          v-for="(t, i) in displayTags"
+          v-if="hasMoreTags"
+          class="more-tags-indicator"
+          @mouseenter="showTooltip = true"
+          @mouseleave="showTooltip = false"
+          :aria-label="hiddenTagsText"
+        >...</span>
+
+        <span
+          v-for="(t, i) in visibleTags"
           :key="'tag-' + i"
           class="pill"
           :class="t.kind === 'stage' ? 'pill-stage' : (t.tone === 'trust' ? 'pill-trust' : 'pill-safety')"
@@ -36,6 +48,25 @@
       </a>
       <span v-else class="link-icon" aria-hidden="true" title="No external links"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="currentColor"/></svg></span>
     </div>
+
+    <!-- ✅ 右侧"外置"隐藏标签栏（视觉在卡片右侧，非卡片内部） -->
+    <div
+      v-if="showTooltip && hasMoreTags"
+      class="tags-tooltip"
+      @mouseenter="showTooltip = true"
+      @mouseleave="showTooltip = false"
+    >
+      <div class="tooltip-content">
+        <div class="tooltip-tags">
+          <span
+            v-for="(t, i) in hiddenTags"
+            :key="'tooltip-tag-' + i"
+            class="tooltip-pill"
+            :class="t.kind === 'stage' ? 'pill-stage' : (t.tone === 'trust' ? 'pill-trust' : 'pill-safety')"
+          >{{ t.label }}</span>
+        </div>
+      </div>
+    </div>
   </article>
 </template>
 
@@ -55,6 +86,9 @@ const props = defineProps({
 
 // 响应式检测移动端
 const isMobile = ref(false)
+
+// 悬停提示框状态
+const showTooltip = ref(false)
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 640
@@ -162,46 +196,61 @@ const tagsRow = computed(() => [
   ...principleList.value.map(label => ({ label, kind: 'principle', tone: String(label).startsWith('Trustworthiness') ? 'trust' : 'safety' })),
 ])
 
-// 移动端标签显示逻辑：每种类型最多显示一个，总数不超过2个
-const displayTags = computed(() => {
-  if (!isMobile.value) {
-    return tagsRow.value
+// ===== 统一挑选逻辑：一次计算出 visible 和 hidden，保证两边绝不重复 =====
+const MAX_VISIBLE = 2
+
+const splitTags = computed(() => {
+  const all = tagsRow.value
+  if (all.length <= MAX_VISIBLE) {
+    return { visible: all, hidden: [] }
   }
-  
-  // 移动端：严格限制为最多2个标签
-  const result = []
-  let hasStage = false
-  let hasSafety = false
-  let hasTrust = false
-  
-  // 优先显示Stage标签（如果有的话）
-  for (const tag of tagsRow.value) {
-    if (result.length >= 2) break // 严格限制最多2个
-    
-    if (tag.kind === 'stage' && !hasStage) {
-      result.push(tag)
-      hasStage = true
+
+  const used = new Set()
+  const pick = (pred) => {
+    if (!pred) return false
+    const idx = all.findIndex((t, i) => !used.has(i) && pred(t, i))
+    if (idx !== -1) { used.add(idx); return true }
+    return false
+  }
+
+  const visible = []
+
+  // 1) 优先挑一个 stage
+  if (visible.length < MAX_VISIBLE) {
+    if (pick((t) => t.kind === 'stage')) {
+      const lastUsed = [...used][used.size-1]
+      visible.push(all[lastUsed])
     }
   }
-  
-  // 然后显示Principle标签
-  for (const tag of tagsRow.value) {
-    if (result.length >= 2) break // 严格限制最多2个
-    
-    if (tag.kind === 'principle') {
-      if (tag.tone === 'safety' && !hasSafety) {
-        result.push(tag)
-        hasSafety = true
-      } else if (tag.tone === 'trust' && !hasTrust && !hasSafety) {
-        // 如果还没有任何principle标签，可以显示trust
-        result.push(tag)
-        hasTrust = true
-      }
+
+  // 2) 再挑一个 principle：优先 safety，其次 trust
+  if (visible.length < MAX_VISIBLE) {
+    if (pick((t) => t.kind === 'principle' && t.tone === 'safety')) {
+      const lastUsed = [...used][used.size-1]
+      visible.push(all[lastUsed])
+    } else if (pick((t) => t.kind === 'principle' && t.tone === 'trust')) {
+      const lastUsed = [...used][used.size-1]
+      visible.push(all[lastUsed])
     }
   }
-  
-  return result
+
+  // 3) 兜底：从左到右补满
+  for (let i = 0; visible.length < MAX_VISIBLE && i < all.length; i++) {
+    if (!used.has(i)) { 
+      used.add(i); 
+      visible.push(all[i]) 
+    }
+  }
+
+  // 剩下的才是右侧要展示的"隐藏标签"
+  const hidden = all.filter((_, i) => !used.has(i))
+  return { visible, hidden }
 })
+
+const visibleTags     = computed(() => splitTags.value.visible)
+const hiddenTags      = computed(() => splitTags.value.hidden)
+const hasMoreTags     = computed(() => hiddenTags.value.length > 0)
+const hiddenTagsText  = computed(() => hiddenTags.value.map(t => t.label).join(', '))
 
 /* -------- 统一补全为绝对外链，避免被当成本站路由 -------- */
 const safeHref = computed(() => {
@@ -231,21 +280,20 @@ const safeHref = computed(() => {
 .paper-card{
   display: grid;
   grid-template-rows: 1fr auto;
-  gap: 10px 0;
-  padding: 14px 16px;
+  gap: .625em 0;              /* 10px -> em */
+  padding: .875em 1em;         /* 14px 16px -> em */
   border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border-radius: 1em;          /* 16px -> em */
   background: #fff;
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  position: relative;
+  /* 右侧栏相关变量 */
+  --rail-gap: .75em;                            /* 卡片与右侧栏的间距（随缩放） */
+  --rail-w: clamp(22ch, 26vw, 36ch);            /* 右侧栏宽度（自适应，避免溢出） */
 }
 
-/* 顶部一行：标题(左) + tag(右) */
-.top-row{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
+/* 顶部行保持原样（flex），无需作为右栏的布局容器 */
+.top-row{ position: relative; display:flex; align-items:center; gap:.625em; min-width:0; }
 
 /* 标题：允许被 tag 挤占空间，最后再省略 */
 .title{
@@ -266,17 +314,8 @@ const safeHref = computed(() => {
 
 .title.disabled{ color:#6b7280; pointer-events:none; cursor:default; text-decoration:none; }
 
-/* tag 一行：从右往左排；不换行；左侧裁切 */
-.tags-row{
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: row-reverse;
-  flex-wrap: nowrap;
-  gap: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
-}
+/* 左侧可见标签行保持你现有实现 */
+.tags-row{ flex:0 0 auto; display:flex; flex-direction:row-reverse; gap:.5em; white-space:nowrap; overflow:hidden; max-width:100%; }
 
 /* 胶囊 */
 .pill{
@@ -292,6 +331,110 @@ const safeHref = computed(() => {
 .pill-safety  { --pill-bd:#cfe8d7; background:#eaf7ef; color:#256c3a; }
 .pill-trust   { --pill-bd:#cfe0f5; background:#eaf2fe; color:#1d4ed8; }
 .pill-stage  { --pill-bd:#E9D5FF; background:#F3E8FF; color:#6D28D9; }
+
+/* 更多标签指示器 */
+.more-tags-indicator{
+  direction: ltr;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  line-height: 1.25;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: calc(14px * var(--pc-scale, 1));
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 24px;
+  height: 24px;
+}
+.more-tags-indicator:hover{
+  background: #e5e7eb;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+/* —— 右侧栏（视觉上在卡片"外面"） —— */
+.tags-tooltip{
+  position: absolute;
+  top: 0;
+  left: 100%;                 /* 贴住卡片右缘，视觉在"外面" */
+  margin-left: var(--rail-gap);  /* 与卡片的间距，单位用 em 随缩放 */
+  width: var(--rail-w);       /* 固定宽度，避免重叠 */
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* —— 去掉白框，仅保留彩色胶囊 —— */
+.tooltip-content{
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+
+  /* 等宽=最长的关键：容器宽度以内容(最长胶囊)为准 */
+  display: inline-flex;
+  flex-direction: column;
+  width: max-content;           /* 宽度=最长那枚胶囊 */
+  max-width: var(--rail-w);     /* 但不超过右侧栏宽度 */
+}
+
+.tooltip-title{
+  font-size: calc(13px * var(--pc-scale, 1));
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+/* 竖排显示（上下放），不左右并排 */
+.tooltip-tags{
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
+  align-items: stretch;         /* 让每一枚胶囊吃满容器宽度 */
+}
+
+/* 胶囊：与"最长胶囊"保持相同宽度（width:100% 继承自 .tooltip-content） */
+.tooltip-pill{
+  width: 100%;                            /* 等宽 */
+  display: inline-flex; justify-content: center; align-items: center;
+  padding: .5em .75em;
+  line-height: 1.25;
+  border-radius: 9999px;
+  border: 1px solid var(--pill-bd, #e5e7eb);
+  font-size: calc(14px * var(--pc-scale, 1));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 小屏时撤销右侧栏：落到卡片下方，避免占位 */
+@media (max-width: 1200px){
+  .paper-card{ margin-right: 0; }
+  .tags-tooltip{
+    left: auto; right: 0; top: 100%;
+    margin-left: 0; margin-top: .5em;
+    width: auto;
+  }
+}
+
+/* 确保提示框中的标签正确应用颜色样式 - 使用更高优先级的选择器 */
+.tags-tooltip .tooltip-pill.pill-safety  { 
+  --pill-bd:#cfe8d7 !important; 
+  background:#eaf7ef !important; 
+  color:#256c3a !important; 
+}
+.tags-tooltip .tooltip-pill.pill-trust   { 
+  --pill-bd:#cfe0f5 !important; 
+  background:#eaf2fe !important; 
+  color:#1d4ed8 !important; 
+}
+.tags-tooltip .tooltip-pill.pill-stage  { 
+  --pill-bd:#E9D5FF !important; 
+  background:#F3E8FF !important; 
+  color:#6D28D9 !important; 
+}
 
 /* 底部一行：作者紧挨外链，整体靠右 */
 .foot{
